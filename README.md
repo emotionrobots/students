@@ -42,7 +42,7 @@ General development cycles is:
 
 	4.  Add any new files with 'git add --all'
 
-	5.  Commit changes to local repository
+	5.  Commit changes to local repository using 'git commit -am "..."'
 
 	6.  Synchronize your local by "git pull'.  If others wrote into your directory you will 
  	    get conflict--then resolve the conflict; otherwise there should be no error.

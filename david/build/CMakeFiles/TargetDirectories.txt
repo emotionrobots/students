@@ -1,3 +1,0 @@
-/home/e-motion/Software/DemoApplications/TinTin/pplcount/build/CMakeFiles/edit_cache.dir
-/home/e-motion/Software/DemoApplications/TinTin/pplcount/build/CMakeFiles/rebuild_cache.dir
-/home/e-motion/Software/DemoApplications/TinTin/pplcount/build/CMakeFiles/PeopleTracking.dir

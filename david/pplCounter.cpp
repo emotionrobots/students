@@ -247,14 +247,14 @@ bool pplCounter::hasExited(Path *p)
 	bool truthval=false;
 	//If distance from exit edge is close enough
 	//to an arbitrary value
-	if(abs((float)p->getPos().x-0.0f)<_minDist)
+	if(abs((float)p->getPos().x-0.0f)<_minDist/4)
 	{
 		if((float)p->getVel().x<0.0f)
 		{
 			truthval=true;
 		}
 	}
-	if(abs((float)p->getPos().x-160.0f)<_minDist)
+	if(abs((float)p->getPos().x-160.0f)<_minDist/4)
 	{
 
 		if((float)p->getVel().x>0.0f)
@@ -262,7 +262,7 @@ bool pplCounter::hasExited(Path *p)
 			truthval=true;
 		}
 	}
-	if(abs((float)p->getPos().y-0.0f)<_minDist)
+	if(abs((float)p->getPos().y-0.0f)<_minDist/4)
 	{
 		if((float)p->getVel().y<0.0f)
 		{
@@ -270,7 +270,7 @@ bool pplCounter::hasExited(Path *p)
 			truthval=true;
 		}
 	}
-	if(abs((float)p->getPos().y-120.0f)<_minDist)
+	if(abs((float)p->getPos().y-120.0f)<_minDist/4)
 	{
 		if((float)p->getVel().y>0.0f)
 		{
@@ -423,6 +423,7 @@ void pplCounter::update(Frame *frame)
 	int numBlobbed=0;
 	int xc=0;
 	float depth=0;
+	int iter=0;
 	if (getFrameType()==DepthCamera::FRAME_XYZI_POINT_CLOUD_FRAME) 
 	{
 		// Create amplitude and depth Mat
@@ -591,16 +592,22 @@ void pplCounter::update(Frame *frame)
 					//Create a bag that contains the residual index
 					contourscopy.erase(contourscopy.begin()+getIndex(contourscopy,min_contour));
 					cout << "7" << endl;
+					passed=false;
 				}
 				if(_populationcopy.size()==0 || contourscopy.size()==0)
 				{
 					done=true;
 					cout << "8" << endl;
 				}
-				if(!passed)
+				if(iter>=contours.size()*_population.size())
 				{
 					done=true;
 				}
+				iter++;
+				//if(!passed)
+				//{
+					//done=true;
+				//}
 			}
 			/*for(Path *traj:_population)
 			{
@@ -617,7 +624,7 @@ void pplCounter::update(Frame *frame)
 				cout << "9" << endl;
 				for(vector<cv::Point> contour:contourscopy)
 				{
-					if(isPerson(contour) && passed)
+					if(isPerson(contour)) /*&& passed)*/
 					{
 						Path *newtraj=new Path(300);
 						newtraj->addPos(getCenter(contour));

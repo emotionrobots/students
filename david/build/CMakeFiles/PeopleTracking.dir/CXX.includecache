@@ -69,6 +69,8 @@ opencv2/core/core.hpp
 /home/e-motion/Software/DemoApplications/TinTin/pplcount/opencv2/core/core.hpp
 opencv2/imgproc/imgproc.hpp
 /home/e-motion/Software/DemoApplications/TinTin/pplcount/opencv2/imgproc/imgproc.hpp
+node.h
+-
 
 /home/e-motion/Software/DemoApplications/TinTin/pplcount/pplCounter.h
 TOFApp.h

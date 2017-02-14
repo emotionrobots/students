@@ -47,6 +47,7 @@ private:
 	bool hasCollided(Path *traj,Path *traj2);
 	int getCloseIndex(Path *traj,vector<cv::Point> cntrs);
 	int numPersons(vector<cv::Point> v);
+	//void init(Local<Object> exports));
 };
 
 #endif 

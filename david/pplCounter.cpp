@@ -11,6 +11,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+//#include <node.h>
 using namespace std;
 
 pplCounter::pplCounter(int w, int h) : TOFApp(w, h)
@@ -412,6 +413,17 @@ int pplCounter::numPersons(vector<cv::Point> v)
 	}
 	return num;
 }
+/*
+void pplCounter::init(Local<Object> exports))
+{
+	NODE_SET_METHOD(exports,_population.size(), Method);
+}
+
+void pplCounter::Method(const FunctionCallbackInfo<Value>& args)
+{
+	Isolate* isolate=args.GetIsolate();
+	args
+}*/
 void pplCounter::update(Frame *frame)
 {
 	cout << "running" << endl;

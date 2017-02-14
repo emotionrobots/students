@@ -416,14 +416,17 @@ int pplCounter::numPersons(vector<cv::Point> v)
 /*
 void pplCounter::init(Local<Object> exports))
 {
-	NODE_SET_METHOD(exports,_population.size(), Method);
+	NODE_SET_METHOD(exports,"name", Method);
 }
 
 void pplCounter::Method(const FunctionCallbackInfo<Value>& args)
 {
 	Isolate* isolate=args.GetIsolate();
-	args
-}*/
+	string count=to_string(_population.size());
+	args.GetReturnValue().Set(String::NewFromUtf8(isolate,count));
+}
+NODE_MODULE(addon,init)
+*/
 void pplCounter::update(Frame *frame)
 {
 	cout << "running" << endl;
@@ -589,8 +592,6 @@ void pplCounter::update(Frame *frame)
 				}
 				xc=0;
 				//Utilize for loop with integer indexes
-				//min_traj=null
-				//min_traj->addPos(getCenter(min_contour));
 				if(passed)
 				{
 					
@@ -616,18 +617,9 @@ void pplCounter::update(Frame *frame)
 					done=true;
 				}
 				iter++;
-				//if(!passed)
-				//{
-					//done=true;
-				//}
+				
 			}
-			/*for(Path *traj:_population)
-			{
-				if(traj->getBlobState())
-				{
-					traj->blobState();
-				}
-			}*/
+		
 			//Now checking any residuals					
 			//This means new contours have popped into frame				
 			if(!contourscopy.size()==0)

@@ -436,7 +436,6 @@ void pplCounter::update(Frame *frame)
 	bool passed=false;
 	bool done=false;
 	int numBlobbed=0;
-	int xc=0;
 	float depth=0;
 	int iter=0;
 	if (getFrameType()==DepthCamera::FRAME_XYZI_POINT_CLOUD_FRAME) 
@@ -573,8 +572,11 @@ void pplCounter::update(Frame *frame)
 				float minDistTemp=_minDist;
 				for(vector<cv::Point> contour:contourscopy)
 				{
-					drawContours(drawing,contours,xc,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
-					xc++;
+					for(int x=0;x<contours.size();x++)
+					{
+						drawContours(drawing,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
+						cv::circle(drawing,getCenter(contours[x]),1,Scalar(0,0,0),1);
+					}
 					cout << "1.5" << endl;
 					for(Path *traj:_populationcopy)
 					{
@@ -590,7 +592,7 @@ void pplCounter::update(Frame *frame)
 						}
 					}
 				}
-				xc=0;
+			
 				//Utilize for loop with integer indexes
 				if(passed)
 				{

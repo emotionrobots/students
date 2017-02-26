@@ -732,7 +732,7 @@ void pplCounter::update(Frame *frame)
 		file << data;
 		file.close();
 		ifstream onlinesettings;
-		const char *pathy2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/return3.txt";
+		const char *pathy2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/reCalib.txt";
 		onlinesettings.open(pathy2);
 		if(onlinesettings.is_open())
 		{
@@ -752,6 +752,7 @@ void pplCounter::update(Frame *frame)
 		}
 		if(_analyzeBackground<501)
 		{
+			cout << "CALIBRATING. DO NOT STAND IN CAMERA VIEW." << endl;
 			_analyzeBackground++;
 		}
 		if(_toCalibrate==1)

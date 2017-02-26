@@ -3,6 +3,7 @@ var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var fs = require('fs');
+var fs2 = require('fs');
 var User = require('../models/user');
 var Settings = require('../models/settings');
 
@@ -35,7 +36,7 @@ router.post('/register', function(req, res){
 	req.checkBody('recalibrate', 'Recalibrate Setting is required').notEmpty();
 	req.checkBody('username', 'Username is required').notEmpty();
 	req.checkBody('password', 'Password is required').notEmpty();
-	req.checkBody('password2', 'Passwords do not match').notEmpty;
+	req.checkBody('password2', 'Passwords do not match').notEmpty();
 
 	var errors = req.validationErrors();
 
@@ -51,14 +52,7 @@ router.post('/register', function(req, res){
 			password: password,
 			recalibrate: recalibrate
 		});
-	fs.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/return2.txt",recalibrate, function(err) {
-    if(err) {
-        console.log(err);
-    } else {
-        console.log("The file was saved!");
-    }
-}); 
-		User.createUser(newUser, function(err, user){
+	User.createUser(newUser, function(err, user){
 			if(err) throw err;
 			console.log(user);
 		});
@@ -121,11 +115,11 @@ router.post('/settings', function(req, res){
 	var setting5 = req.body.setting5;
 
 	// Validation
-	req.checkBody('setting1', 'Name is required').notEmpty();
-	req.checkBody('setting2', 'Code is required').notEmpty();
-	req.checkBody('setting3', 'Username is required').notEmpty();
-	req.checkBody('setting4', 'Password is required').notEmpty();
-	req.checkBody('setting5', 'Passwords do not match').notEmpty;
+	req.checkBody('setting1', 'setting 1 required').notEmpty();
+	req.checkBody('setting2', 'setting 2 required').notEmpty();
+	req.checkBody('setting3', 'setting 3 required').notEmpty();
+	req.checkBody('setting4', 'setting 4 required').notEmpty();
+	req.checkBody('setting5', 'setting 5 required').notEmpty();
 
 	var errors = req.validationErrors();
 
@@ -141,7 +135,14 @@ router.post('/settings', function(req, res){
 			setting4: setting4,
 			setting5: setting5
 		});
-		fs.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/return3.txt",setting1, function(err) {
+		fs.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/reCalib.txt",setting1, function(err) {
+		 if(err) {
+        console.log(err);
+   		 } else {
+        console.log("The file was saved!");
+  		  }
+		}); 
+		fs2.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/maxCount.txt",setting2, function(err) {
 		 if(err) {
         console.log(err);
    		 } else {

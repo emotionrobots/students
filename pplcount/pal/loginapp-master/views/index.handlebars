@@ -1,5 +1,7 @@
- <h2 class="page-header">People Counter</h2>
- <img src="emotion.jpg" ALT="" WIDTH=250 HEIGHT=175>
+<img src="emotion.jpg" ALT="" WIDTH=239 HEIGHT=175>
+<img src="logo.jpg" ALT="" WIDTH=450 HEIGHT=200>
+
+<META HTTP-EQUIV="refresh" CONTENT="1">
 <pre id="fileDisplayArea"><pre>
 <script>
 var fileDisplayArea = document.getElementById('fileDisplayArea');
@@ -33,10 +35,10 @@ function readTextFile(file)
             if(rawFile.status === 200 || rawFile.status === 0)
             {
                 allText = rawFile.responseText;
-				var regCount="Welcome to the People Counting System!"+"\n\n\n"+"People count: "+allText;
-				var regCountDisp=regCount.fontsize(5);
-				var overCount="Welcome to the People Counting System!"+"\n\n\n"+"ALERT! ALERT! THERE ARE TOO MANY PEOPLE!"+"\n"+"People Count: "+allText;
-				var overCountDisp=overCount.fontsize(5);
+				var regCount="People count: "+allText;
+				var regCountDisp=regCount.fontsize(7);
+				var overCount="ALERT! ALERT! THERE ARE TOO MANY PEOPLE!"+"\n"+"People Count: "+allText;
+				var overCountDisp=overCount.fontsize(7);
 				var overCountDisp2=overCountDisp.fontcolor("red");
 				if(parseInt(allText)<=parseInt(allText2))
 				{
@@ -55,6 +57,5 @@ function readTextFile(file)
 readTextFile("file:///home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/count.txt");
 
 </script>
-<META HTTP-EQUIV="refresh" CONTENT="1">
 
 

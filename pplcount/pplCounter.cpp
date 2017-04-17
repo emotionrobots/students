@@ -7,6 +7,8 @@
 #include <string>
 #include <sstream>
 #include <cmath> 
+#include <chrono>
+#include <ctime>
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
@@ -19,14 +21,23 @@ pplCounter::pplCounter(int w, int h) : TOFApp(w, h)
 	initDisplay();
 	_analyzeBackground=0;
 	_toCalibrate=0;
+	_rightExit=0;
+	_leftExit=0;	
+	_topExit=0;
+	_bottomExit=0;
+	_go=true;
+	startOnce=true;
+	enterCase=0;
+	_personsClear=0;
+	
 	for(int i=0;i<getDim().height;i++)
 	{
 		for(int j=0;j<getDim().width;j++)
 		{
-			maxMap.push_back(0.0);
 			avgMap.push_back(0.0);
-			minMap.push_back(1000.0);
 			stdDev.push_back(0.0);
+			avgMap2.push_back(0.0);
+			stdDev2.push_back(0.0);
 		}
 	}
 	
@@ -95,26 +106,6 @@ void pplCounter::initDisplay()
 	cout << "Mininum Distance: "+to_string(_minDist) << endl;
 }	
 
-
-Mat pplCounter::clipBackground(float dThr,float iThr)
-{
-	Mat dMat=Mat::zeros(_iMat.size(),CV_32FC1);
-	Mat fMat=_bkgndMat-_dMat;
-	//Mat fMat=_dMat;
-	
-	for(int i=0;i<_dMat.rows;i++) 
-	{
-		for(int j=0;j<_dMat.cols;j++) 
-		{
-			if(fMat.at<float>(i,j)<0.0f) 
-			{
-				fMat.at<float>(i,j)=0.0f;
-			}
-			dMat.at<float>(i,j)=(_iMat.at<float>(i,j)>iThr && fMat.at<float>(i,j)>dThr) ? 255.0:0.0;
-		}
-	}
-	return dMat;
-}
 
 void pplCounter::resetBackground()
 {
@@ -243,40 +234,98 @@ int pplCounter::getIndex(vector<cv::Point> t,cv::Point p)
 }
 
 //Sees if a trajectory of a contour has the potential of exiting
-bool pplCounter::hasExited(Path *p)
+bool pplCounter::hasExitedRight(Path *p)
 {
 	bool truthval=false;
 	//If distance from exit edge is close enough
 	//to an arbitrary value
-	if(abs((float)p->getPos().x-0.0f)<_minDist/4)
+	if(abs((float)p->getPos().x-160.0f)<15.0f)
 	{
-		if((float)p->getVel().x<0.0f)
-		{
-			truthval=true;
-		}
-	}
-	if(abs((float)p->getPos().x-160.0f)<_minDist/4)
-	{
+		truthval=true;
 
-		if((float)p->getVel().x>0.0f)
+		/*if((float)p->getVel().x>0.0f)
 		{
 			truthval=true;
-		}
+		}*/
 	}
-	if(abs((float)p->getPos().y-0.0f)<_minDist/4)
+
+	return truthval;
+}
+bool pplCounter::hasExitedLeft(Path *p)
+{
+	bool truthval=false;
+	//If distance from exit edge is close enough
+	//to an arbitrary value
+	if(abs((float)p->getPos().x-0.0f)<15.0f)
 	{
-		if((float)p->getVel().y<0.0f)
+		truthval=true;
+		/*if((float)p->getVel().x<0.0f)
+		{
+			truthval=true;
+		}*/
+	}
+	return truthval;
+}
+bool pplCounter::hasExitedTop(Path *p)
+{
+	bool truthval=false;
+	//If distance from exit edge is close enough
+	//to an arbitrary value
+	if(abs((float)p->getPos().y-0.0f)<15.0f)
+	{
+		truthval=true;
+		/*if((float)p->getVel().y<0.0f)
 		{
 
 			truthval=true;
-		}
+		}*/
 	}
-	if(abs((float)p->getPos().y-120.0f)<_minDist/4)
+	return truthval;
+}
+void pplCounter::clearCounts()
+{
+	ofstream settings1;
+	const char *path1="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/15a.txt";
+	settings1.open(path1);
+	string data(to_string(0));
+	settings1 << data;
+	settings1.close();
+
+	ofstream settings2;
+	const char *path2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/30a.txt";
+	settings2.open(path2);
+	settings2 << "0";
+	settings2.close();
+
+	ofstream settings3;
+	const char *path3="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/45a.txt";
+	settings3.open(path3);
+	settings3 << "0";
+	settings3.close();
+
+	ofstream settings4;
+	const char *path4="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/60a.txt";
+	settings4.open(path4);
+	settings4 << "0";
+	settings4.close();
+
+	ofstream settings5;
+	const char *path5="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/75a.txt";
+	settings5.open(path5);
+	settings5 << "0";
+	settings5.close();
+	
+}
+bool pplCounter::hasExitedBottom(Path *p)
+{
+	bool truthval=false;
+	if(abs((float)p->getPos().y-120.0f)<15.0f)
 	{
-		if((float)p->getVel().y>0.0f)
+		truthval=true;
+		/*if((float)p->getVel().y>0.0f)
 		{
 			truthval=true;
-		}
+		}*/
 	}
 	return truthval;
 }
@@ -404,7 +453,7 @@ int pplCounter::getCloseIndex(Path *traj,vector<cv::Point> cntrs)
 int pplCounter::numPersons(vector<cv::Point> v)
 {
 	int num=1;
-	for(int i=2;i<20;i++)
+	for(int i=1;i<20;i++)
 	{
 		if(contourArea(v)/i<_maxContourArea && contourArea(v)/i>_minContourArea)
 		{
@@ -413,20 +462,7 @@ int pplCounter::numPersons(vector<cv::Point> v)
 	}
 	return num;
 }
-/*
-void pplCounter::init(Local<Object> exports))
-{
-	NODE_SET_METHOD(exports,"name", Method);
-}
 
-void pplCounter::Method(const FunctionCallbackInfo<Value>& args)
-{
-	Isolate* isolate=args.GetIsolate();
-	string count=to_string(_population.size());
-	args.GetReturnValue().Set(String::NewFromUtf8(isolate,count));
-}
-NODE_MODULE(addon,init)
-*/
 void pplCounter::update(Frame *frame)
 {
 	cout << "running" << endl;
@@ -444,7 +480,14 @@ void pplCounter::update(Frame *frame)
 		// Create amplitude and depth Mat
 		vector<float> zMap, iMap;
 		XYZIPointCloudFrame *frm=dynamic_cast<XYZIPointCloudFrame *>(frame);
-		if(_analyzeBackground<250)
+		if(startOnce==true && _analyzeBackground==501)
+		{
+			startTime=chrono::system_clock::now();
+			startOnce=false;
+			clearCounts();
+			
+		}
+		if(_analyzeBackground<250) //&& _population.size()==0)
 		{
 			for (int i=0;i< frm->points.size();i++) 
 			{
@@ -452,7 +495,7 @@ void pplCounter::update(Frame *frame)
 				avgMap[i]=a+frm->points[i].z;
 			}
 		}
-		if(_analyzeBackground==250)
+		if(_analyzeBackground==250) //&& _population.size()==0)
 		{
 			for(int i=0;i<avgMap.size();i++)
 			{
@@ -478,7 +521,57 @@ void pplCounter::update(Frame *frame)
 			}
 			
 		}
-		if(_analyzeBackground>=501)
+		if(_personsClear<250 && _analyzeBackground==501)
+		{
+			for (int i=0;i< frm->points.size();i++) 
+			{
+				float a=avgMap2[i];
+				avgMap2[i]=a+frm->points[i].z;
+			}
+		}
+		if(_personsClear==250 && _analyzeBackground==501)
+		{
+			for(int i=0;i<avgMap.size();i++)
+			{
+				float a=avgMap2[i];
+				avgMap2[i]=(float)a/250.0;
+			}
+		}
+		if((_personsClear>250 && _personsClear<=500) && _analyzeBackground==501)
+		{
+			for(int i=0;i<frm->points.size();i++)
+			{
+				float a=stdDev2[i];
+				stdDev2[i]=a+(avgMap2[i]-frm->points[i].z)*(avgMap2[i]-frm->points[i].z);
+			}
+			
+		}
+		if(_personsClear==500 && _analyzeBackground==501)
+		{
+			for(int i=0;i<frm->points.size();i++)
+			{
+				float a=stdDev2[i];
+				stdDev2[i]=(float)sqrt(a/250.0);
+			}
+			
+		}
+		if(_personsClear==501 && _analyzeBackground==501)
+		{
+			float suma=0;
+			for(int i=0;i<frm->points.size();i++)
+			{
+				suma+=avgMap2[i];
+			}
+			for(int i=0;i<frm->points.size();i++)
+			{
+				if(true)
+				{
+				stdDev[i]=stdDev2[i];	
+				avgMap[i]=avgMap2[i];
+				}
+			}
+		}
+		if(_analyzeBackground>=500)
 		{
 		
 			for(int i=0;i<frm->points.size();i++)
@@ -501,6 +594,9 @@ void pplCounter::update(Frame *frame)
 		
 		// Find foreground by subtraction and convert to binary 
 		// image based on amplitude and depth thresholds
+
+		
+		
 		if(_analyzeBackground>=501){
 		if (!_setBackground) 
 		{
@@ -508,7 +604,7 @@ void pplCounter::update(Frame *frame)
 			_setBackground = true;
 			cout << endl << "Updated background for people counting process." << endl;
 		}
-		Mat fMat=_dMat.clone();//clipBackground((float)_depthThresh/100.0,(float)_ampThresh/100.0);
+		Mat fMat=_dMat.clone();
 		Mat forKMeans=fMat.clone();
 		// Apply morphological open to clean up image
 		fMat.convertTo(_bMat,CV_8U,255.0);
@@ -525,6 +621,7 @@ void pplCounter::update(Frame *frame)
 		findContours(cloneofMorph,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE,cv::Point(0,0));
 		
 		//Ok
+	
 		if(_population.size()==0)
 		{
 			int num;
@@ -544,7 +641,7 @@ void pplCounter::update(Frame *frame)
 				//Checking for clustered entry of more than 1 person into frame
 				else
 				{
-					if(!contourArea(contours[i])<_minContourArea)
+					if(!contourArea(contours[i])<_maxContourArea)
 					{
 						if(numPersons(contours[i])>1)
 						{
@@ -663,10 +760,30 @@ void pplCounter::update(Frame *frame)
 				for(Path *traj:_populationcopy)
 				{	
 					//Testing the case where someone simply exited frame
-					if(hasExited(traj))
+					if(hasExitedRight(traj))
 					{
 						_population.erase(_population.begin()+getIndex(_population,traj));
-						cout << "12" << endl;	
+						cout << "12" << endl;
+						_rightExit++;	
+					}
+					else if(hasExitedLeft(traj))
+					{
+						_population.erase(_population.begin()+getIndex(_population,traj));
+						cout << "12" << endl;
+						_leftExit++;	
+					}
+					else if(hasExitedTop(traj))
+					{
+						_population.erase(_population.begin()+getIndex(_population,traj));
+						cout << "12" << endl;
+						_topExit++;	
+					}
+					else if(hasExitedBottom(traj))
+					{
+						_population.erase(_population.begin()+getIndex(_population,traj));
+						cout << "12.1" << endl;
+						enterCase++;
+						_bottomExit++;	
 					}
 				}
 
@@ -700,7 +817,6 @@ void pplCounter::update(Frame *frame)
 							for(Path *traj:_populationcopy)
 							{
 								_population[getIndex(_population,traj)]->addPos(cv::Point(cntrs[getCloseIndex(traj,cntrs)].x,cntrs[getCloseIndex(traj,cntrs)].y));
-								//_population[getIndex(_population,traj)]->blobState();
 								cout << "15" << endl;
 							}
 						}
@@ -712,13 +828,13 @@ void pplCounter::update(Frame *frame)
 
 		}
 		//Catches any logical errors associated with _population collection
-		if(contours.size()==0)
+		/*if(contours.size()==0)
 		{
 			for(Path *traj:_population)
 			{
 				_population.erase(_population.begin()+getIndex(_population,traj));
 			}
-		}
+		}*/
 		putText(drawing,"Count = "+to_string(_population.size())+","+to_string(contours.size()),cv::Point(70,10),FONT_HERSHEY_PLAIN,.75,Scalar(0,0,255));
 		//imshow("Binary",_bMat);
 		//imshow("Amplitude",_iMat); 
@@ -750,16 +866,142 @@ void pplCounter::update(Frame *frame)
 			}
 			onlinesettings.close();
 		}
-		if(_analyzeBackground<501)
+		if(_analyzeBackground<501) //&& _population.size()==0)
 		{
 			cout << "CALIBRATING. DO NOT STAND IN CAMERA VIEW." << endl;
 			_analyzeBackground++;
+			/*if(_analyzeBackground>=500)
+			{
+				_go=true;
+				//_analyzeBackground=0;
+			}*/
+			
 		}
+		if(_analyzeBackground>=501)
+		{
+			_personsClear++;
+			if(_personsClear>501)
+			{
+				_personsClear=0;
+				fill(avgMap2.begin(),avgMap2.end(),0.0);
+				fill(stdDev2.begin(),stdDev2.end(),0.0);
+			}
+			if(_population.size()>0)
+			{
+				_personsClear=0;
+				fill(avgMap2.begin(),avgMap2.end(),0.0);
+				fill(stdDev2.begin(),stdDev2.end(),0.0);
+			}
+		}
+	
 		if(_toCalibrate==1)
 		{
-			_analyzeBackground=0;
+			//_analyzeBackground=0;
 			_toCalibrate=0;
+			_personsClear=0;
 		}
+		currentTime=chrono::system_clock::now();
+		elapsedTime=currentTime-startTime;
+		_elapsedSeconds=elapsedTime.count();
+		if(_elapsedSeconds>10.0 && _elapsedSeconds<11.0)
+		{
+			const char *path1="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/15a.txt";
+			ofstream file1;
+			file1.open(path1);
+			string data1(to_string(enterCase));
+			file1 << data1;
+			file1.close();
+			time_t end_time=chrono::system_clock::to_time_t(currentTime);
+			if(_go)
+			{
+				timeData.push_back(ctime(&end_time));
+				timeData.push_back(to_string(enterCase));
+				_go=false;
+			}
+		}
+		if(_elapsedSeconds>20.0 && _elapsedSeconds<21.0)
+		{
+			const char *path2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/30a.txt";
+			ofstream file2;
+			file2.open(path2);
+			string data2(to_string(enterCase));
+			file2 << data2;
+			file2.close();
+			time_t end_time=chrono::system_clock::to_time_t(currentTime);
+			if(!_go)
+			{
+				timeData.push_back(ctime(&end_time));
+				timeData.push_back(to_string(enterCase));
+				_go=true;
+			}
+		}
+		if(_elapsedSeconds>30.0 && _elapsedSeconds<31.0)
+		{
+			const char *path3="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/45a.txt";
+			ofstream file3;
+			file3.open(path3);
+			string data3(to_string(enterCase));
+			file3 << data3;
+			file3.close();
+			time_t end_time=chrono::system_clock::to_time_t(currentTime);
+			if(_go)
+			{
+				timeData.push_back(ctime(&end_time));
+				timeData.push_back(to_string(enterCase));
+				_go=false;
+			}
+		}
+		if(_elapsedSeconds>40.0 && _elapsedSeconds<41.0)
+		{
+			const char *path4="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/60a.txt";
+			ofstream file4;
+			file4.open(path4);
+			string data4(to_string(enterCase));
+			file4 << data4;
+			file4.close();
+			time_t end_time=chrono::system_clock::to_time_t(currentTime);
+			if(!_go)
+			{
+				timeData.push_back(ctime(&end_time));
+				timeData.push_back(to_string(enterCase));
+				_go=true;
+			}
+		}
+		if(_elapsedSeconds>50.0 && _elapsedSeconds<51.0)
+		{
+			const char *path5="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/75a.txt";
+			ofstream file5;
+			file5.open(path5);
+			string data5(to_string(enterCase));
+			file5 << data5;
+			file5.close();
+			time_t end_time=chrono::system_clock::to_time_t(currentTime);
+			if(_go)
+			{
+				timeData.push_back(ctime(&end_time));
+				timeData.push_back(to_string(enterCase));
+				startTime=chrono::system_clock::now();
+			}
+		}
+		const char *path6="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/timeData.txt";
+			ofstream file6;
+			file6.open(path6);
+			string s;
+			for(int i=0;i<timeData.size();i++)
+			{
+				if(i%2==0)
+				{
+					s+=timeData[i]+"Number of people:";
+				}
+				else
+				{
+					s+=timeData[i]+"\n";
+				}
+			}
+			string data6(s);
+			file6 << data6;
+			file6.close();
+		
 	}
 }
 #undef __PPLCOUNTER_CPP__

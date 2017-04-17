@@ -1,8 +1,3 @@
-<img src="emotion.jpg" ALT="" WIDTH=239 HEIGHT=175>
-<img src="logo.jpg" ALT="" WIDTH=450 HEIGHT=200>
-
-<META HTTP-EQUIV="refresh" CONTENT="5">
-<pre id="fileDisplayArea"></pre>
 <script>
 var fileDisplayArea = document.getElementById('fileDisplayArea');
 var allText;
@@ -57,16 +52,8 @@ function readTextFile(file)
 readTextFile("file:///home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/count.txt");
 </script>
 
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
- 
-<style type="text/css">
-body { font-family: Verdana, Arial, sans-serif; font-size: 12px; }
-h1 { width: 450px; margin: 0 auto; font-size: 12px; text-align: center; }
-#placeholder { width: 650px; height: 325px; position: relative; margin: 0 auto; }
-</style>
-<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
- 
+
+<script src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
 <script type="text/javascript">
 var allText1;
 var allText2;
@@ -162,57 +149,28 @@ function readTextFile5(file)
     rawFile5.send(null);
 }
 readTextFile5("file:///home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/75a.txt");
-
-
-var d1 = [[1, parseInt(allText1)], [2, parseInt(allText2)], [3,parseInt(allText3)], [4,parseInt(allText4)], [5, parseInt(allText5)]];
-
-var data1 = [
-    {data: d1, points: { symbol: "circle", fillColor: "#058DC7" }, color: '#058DC7'}
-];
- 
-$(document).ready(function () {
-    $.plot($("#placeholder"), data1, {
-   		series: {
-            lines: { show: true },
-            points: {
-                radius: 2,
-                show: true,
-                fill: true
-            },
-        },
-        grid: {
-            borderWidth: 0
-        }
-    });
-     
-});
-</script>
-	<h1>People Count History (minutes after vs. people count) </h1>
-    <div id="placeholder"></div>
-<pre id="fileDisplayArea2"></pre>
-
-<script>
-var fileDisplayArea = document.getElementById('fileDisplayArea2');
-var allText;
-function readTextFile(file)
-{
-    var rawFile = new XMLHttpRequest();
-    rawFile.open("GET", "timeData.txt", false);
-    rawFile.onreadystatechange = function ()
-    {
-        if(rawFile.readyState === 4)
-        {
-            if(rawFile.status === 200 || rawFile.status === 0)
-            {
-                allText = rawFile.responseText;
-				var regCount=""+allText;
-				var regCountDisp=regCount.fontsize(7);
-			document.getElementById("fileDisplayArea2").innerHTML=regCount
-				
-            }
-        }
-    }
-    rawFile.send(null);
+window.onload = function () {
+	var chart = new CanvasJS.Chart("chartContainer", {
+		theme: "theme2",//theme1
+		title:{
+			text: "People Count Historical Data"              
+		},
+		animationEnabled: false,   // change to true
+		data: [              
+		{
+			// Change type to "bar", "area", "spline", "pie",etc.
+			type: "line",
+			dataPoints: [
+				{ label: "1 min. ago",  y: parseInt(allText1)  },
+				{ label: "2 min. ago", y: parseInt(allText2)  },
+				{ label: "3 min. ago", y: parseInt(allText3)  },
+				{ label: "4 min. ago",  y: parseInt(allText4)  },
+				{ label: "5 min. ago",  y: parseInt(allText5)  }
+			]
+		}
+		]
+	});
+	chart.render();
 }
-readTextFile("file:///home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/timeData.txt");
 </script>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>

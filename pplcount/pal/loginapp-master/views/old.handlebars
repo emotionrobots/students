@@ -58,14 +58,21 @@ readTextFile("file:///home/e-motion/Software/DemoApplications/TinTin/pplcount/pa
 </script>
 
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
- 
 <style type="text/css">
 body { font-family: Verdana, Arial, sans-serif; font-size: 12px; }
 h1 { width: 450px; margin: 0 auto; font-size: 12px; text-align: center; }
-#placeholder { width: 650px; height: 325px; position: relative; margin: 0 auto; }
+#placeholder { width: 450px; height: 200px; position: relative; margin: 0 auto; }
+.legend table, .legend > div { height: 82px !important; opacity: 1 !important; right: -55px; top: 10px; width: 116px !important; }
+.legend table { border: 1px solid #555; padding: 5px; }
+#flot-tooltip { font-size: 12px; font-family: Verdana, Arial, sans-serif; position: absolute; display: none; border: 2px solid; padding: 2px; background-color: #FFF; opacity: 0.8; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; }
 </style>
-<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
+ 
+<!--[if lte IE 8]><script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/excanvas.min.js"></script><![endif]-->
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.symbol.min.js"></script>
+<script type="text/javascript" src="http://raw.github.com/markrcote/flot-axislabels/master/jquery.flot.axislabels.js"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.time.min.js"></script>
  
 <script type="text/javascript">
 var allText1;
@@ -164,7 +171,7 @@ function readTextFile5(file)
 readTextFile5("file:///home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/75a.txt");
 
 
-var d1 = [[1, parseInt(allText1)], [2, parseInt(allText2)], [3,parseInt(allText3)], [4,parseInt(allText4)], [5, parseInt(allText5)]];
+var d1 = [[1483146061000, parseInt(allText1)], [1485910861000, parseInt(allText2)], [1488330061000,parseInt(allText3)], [1491008461000,parseInt(allText4)], [1493600461000, parseInt(allText5)]];
 
 var data1 = [
     {data: d1, points: { symbol: "circle", fillColor: "#058DC7" }, color: '#058DC7'}
@@ -172,7 +179,22 @@ var data1 = [
  
 $(document).ready(function () {
     $.plot($("#placeholder"), data1, {
-   		series: {
+        xaxis: {
+            mode: "time",
+            tickSize: [1, "month"],
+            monthNames: ["1 min. after", "2 min. after", "3 min. after", "4 min. after", "5 min. after"],
+            tickLength: 1,
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 5,
+            axisLabelFontFamily: 'Verdana',
+        },
+        yaxis: {
+            axisLabel: 'People Count',
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 5,
+            axisLabelFontFamily: 'Verdana',
+        },
+        series: {
             lines: { show: true },
             points: {
                 radius: 2,
@@ -187,13 +209,31 @@ $(document).ready(function () {
      
 });
 </script>
-	<h1>People Count History (minutes after vs. people count) </h1>
+
+  <h1>People Count History</h1>
     <div id="placeholder"></div>
 <pre id="fileDisplayArea2"></pre>
-
 <script>
 var fileDisplayArea = document.getElementById('fileDisplayArea2');
 var allText;
+var allText2;
+function readTextFile2(file)
+{
+    var rawFile2 = new XMLHttpRequest();
+    rawFile2.open("GET", "maxCount.txt", false);
+    rawFile2.onreadystatechange = function ()
+    {
+        if(rawFile2.readyState === 4)
+        {
+            if(rawFile2.status === 200 || rawFile2.status === 0)
+            {
+                allText2 = rawFile2.responseText
+            }
+        }
+    }
+    rawFile2.send(null);
+}
+readTextFile2("file:///home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/maxCount.txt");
 function readTextFile(file)
 {
     var rawFile = new XMLHttpRequest();

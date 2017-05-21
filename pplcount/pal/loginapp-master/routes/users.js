@@ -4,6 +4,9 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var fs = require('fs');
 var fs2 = require('fs');
+var fs3 = require('fs');
+var fs4 = require('fs');
+var fs5 = require('fs');
 var User = require('../models/user');
 var Settings = require('../models/settings');
 
@@ -135,25 +138,41 @@ router.post('/settings', function(req, res){
 			setting4: setting4,
 			setting5: setting5
 		});
-		fs.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/reCalib.txt",setting1, function(err) {
+		fs.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/maxCount.txt",setting1, function(err) {
 		 if(err) {
         console.log(err);
    		 } else {
         console.log("The file was saved!");
   		  }
 		}); 
-		fs2.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/maxCount.txt",setting2, function(err) {
+		fs2.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/enterpos.txt",setting2, function(err) {
 		 if(err) {
         console.log(err);
    		 } else {
         console.log("The file was saved!");
   		  }
 		}); 
-
-		/*Settings.createSettings(newSettings, function(err, settings){
-			if(err) throw err;
-			console.log(settings);
-		});*/
+		fs3.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/exitpos.txt",setting3, function(err) {
+		 if(err) {
+        console.log(err);
+   		 } else {
+        console.log("The file was saved!");
+  		  }
+		}); 
+		fs4.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/maxcontour.txt",setting4, function(err) {
+		 if(err) {
+        console.log(err);
+   		 } else {
+        console.log("The file was saved!");
+  		  }
+		}); 
+		fs5.writeFile("/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/mincontour.txt",setting5, function(err) {
+		 if(err) {
+        console.log(err);
+   		 } else {
+        console.log("The file was saved!");
+  		  }
+		}); 
 
 
 		

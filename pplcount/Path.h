@@ -14,7 +14,6 @@ private:
 	//deque<deque<spatial>> _fifo;
 	deque<cv::Point> _fifo;
 	int _sz;
-	bool blobbed;
 	
 public:
 	Path(int sz);
@@ -27,8 +26,6 @@ public:
 	Vel getVel(int a);
 	int getSize();
 	void fifoResize(int n);
-	void blobState();
-	bool getBlobState();
 };
 
 #endif

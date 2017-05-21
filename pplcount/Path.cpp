@@ -3,11 +3,9 @@
 Path::Path(int sz)
 {
 	_sz=sz;
-	blobbed=false;
 }	
 Path::~Path()
 {
-
 }
 cv::Point Path::getPos()
 {
@@ -68,21 +66,6 @@ int Path::getSize()
 void Path::fifoResize(int n)
 {
 	_sz=n;
-}
-void Path::blobState()
-{
-	if(blobbed)
-	{
-		blobbed=false;
-	}
-	else
-	{
-		blobbed=true;
-	}
-}
-bool Path::getBlobState()
-{
-	return blobbed;
 }
 #undef __PATH_CPP__
 

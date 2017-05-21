@@ -7,6 +7,24 @@
 var fileDisplayArea = document.getElementById('fileDisplayArea');
 var allText;
 var allText2;
+var allText3;
+function readTextFile3(file)
+{
+    var rawFile3 = new XMLHttpRequest();
+    rawFile3.open("GET", "entercase.txt", false);
+    rawFile3.onreadystatechange = function ()
+    {
+        if(rawFile3.readyState === 4)
+        {
+            if(rawFile3.status === 200 || rawFile3.status === 0)
+            {
+                allText3 = rawFile3.responseText
+            }
+        }
+    }
+    rawFile3.send(null);
+}
+readTextFile3("file:///home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/entercase.txt");
 function readTextFile2(file)
 {
     var rawFile2 = new XMLHttpRequest();
@@ -40,11 +58,11 @@ function readTextFile(file)
 				var overCount="ALERT! ALERT! THERE ARE TOO MANY PEOPLE!"+"\n"+"People Count: "+allText;
 				var overCountDisp=overCount.fontsize(7);
 				var overCountDisp2=overCountDisp.fontcolor("red");
-				if(parseInt(allText)<=parseInt(allText2))
+				if(parseInt(allText3)<=parseInt(allText2))
 				{
 					document.getElementById("fileDisplayArea").innerHTML=regCountDisp
 				}				
-				if(parseInt(allText)>parseInt(allText2))
+				if(parseInt(allText3)>parseInt(allText2))
 				{
 					document.getElementById("fileDisplayArea").innerHTML=overCountDisp2
 				}

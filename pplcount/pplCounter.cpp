@@ -20,7 +20,6 @@ pplCounter::pplCounter(int w, int h) : TOFApp(w, h)
 	_setBackground=false;
 	initDisplay();
 	_analyzeBackground=0;
-	_toCalibrate=0;
 	_rightExit=0;
 	_leftExit=0;	
 	_topExit=0;
@@ -28,6 +27,7 @@ pplCounter::pplCounter(int w, int h) : TOFApp(w, h)
 	_go=true;
 	startOnce=true;
 	enterCase=0;
+	exitCase=0;
 	_personsClear=0;
 	
 	for(int i=0;i<getDim().height;i++)
@@ -48,8 +48,8 @@ void pplCounter::initDisplay()
 	//namedWindow( "Amplitude", WINDOW_NORMAL );
 	//namedWindow( "Binary", WINDOW_NORMAL );
 	//namedWindow( "Morph", WINDOW_NORMAL );
-	namedWindow( "Draw", WINDOW_NORMAL );
 	//namedWindow( "Controls", WINDOW_NORMAL);
+	namedWindow( "Draw", WINDOW_NORMAL );
 	string line;
 	//Reading from calibrationSettings.txt
 	ifstream calibrationSettings;
@@ -72,24 +72,15 @@ void pplCounter::initDisplay()
 	}
 	if(holder.size()==6)
 	{
-		//_ampGain=holder[0];
-		_ampGain=100;	
-		//_depthThresh=holder[1];
-		_depthThresh=3;
-		//_ampThresh=holder[2];
-		_ampThresh=3;
+		//_minDist and Contour area are primary discriminating factors in tracking; other factors are unused or insignificant
 		_minContourArea=holder[3];
 		_maxContourArea=holder[4];
 		_aspectRatio=holder[5];
-		//Don't have a minDist value yet
 		_minDist=20;
 		
 	}
 	else
 	{
-		_ampGain=0;	
-		_depthThresh=0;
-		_ampThresh=0;
 		_minContourArea=0;
 		_maxContourArea=0;
 		_aspectRatio=0;
@@ -134,12 +125,12 @@ bool pplCounter::isPerson(vector<cv::Point> p)
 	dx=maxX-minX;
 	dy=maxY-minY;
 	
+	//Determining if a human is in frame
 	if(contourArea(p)>_minContourArea && contourArea(p)<_maxContourArea)
 	{
 		if (dx>0) 
 		{
 			float ratio=(float)dy/(float)dx;
-			//cout << "ratio = " << ratio << endl;
 			if (ratio>(float)_aspectRatio/100.0) 
 			{
 				rc = true;
@@ -187,7 +178,7 @@ float pplCounter::dist(cv::Point p, cv::Point p2)
 	return _dist;
 }
 
-//Finds the position where an element fits in a vector
+//Finds index the position where an element fits in a vector
 int pplCounter::getIndex(vector<Path*> t,Path *p)
 {
 	int index=0;
@@ -203,6 +194,7 @@ int pplCounter::getIndex(vector<Path*> t,Path *p)
 	
 }
 
+//Finds index position of a contour in a vector of contours
 int pplCounter::getIndex(vector<vector<cv::Point>> t,vector<cv::Point> p)
 {
 	int index=0;
@@ -218,6 +210,7 @@ int pplCounter::getIndex(vector<vector<cv::Point>> t,vector<cv::Point> p)
 	
 }
 
+//Finds index position of a point in a vector of points
 int pplCounter::getIndex(vector<cv::Point> t,cv::Point p)
 {
 	int index=0;
@@ -233,7 +226,8 @@ int pplCounter::getIndex(vector<cv::Point> t,cv::Point p)
 	
 }
 
-//Sees if a trajectory of a contour has the potential of exiting
+//Sees if a trajectory potentially exited to the right of frame
+//Could look at directional velocity as well
 bool pplCounter::hasExitedRight(Path *p)
 {
 	bool truthval=false;
@@ -243,45 +237,45 @@ bool pplCounter::hasExitedRight(Path *p)
 	{
 		truthval=true;
 
-		/*if((float)p->getVel().x>0.0f)
-		{
-			truthval=true;
-		}*/
 	}
 
 	return truthval;
 }
+
+//Checks if person has potentially exited left
 bool pplCounter::hasExitedLeft(Path *p)
 {
 	bool truthval=false;
-	//If distance from exit edge is close enough
-	//to an arbitrary value
 	if(abs((float)p->getPos().x-0.0f)<15.0f)
 	{
 		truthval=true;
-		/*if((float)p->getVel().x<0.0f)
-		{
-			truthval=true;
-		}*/
 	}
 	return truthval;
 }
+//Checks if person has potentially exited to the top of frame
 bool pplCounter::hasExitedTop(Path *p)
 {
 	bool truthval=false;
-	//If distance from exit edge is close enough
-	//to an arbitrary value
+
 	if(abs((float)p->getPos().y-0.0f)<15.0f)
 	{
 		truthval=true;
-		/*if((float)p->getVel().y<0.0f)
-		{
-
-			truthval=true;
-		}*/
 	}
 	return truthval;
 }
+//Checks if person has potentially exited to the bottom of frame
+bool pplCounter::hasExitedBottom(Path *p)
+{
+	bool truthval=false;
+
+	if(abs((float)p->getPos().y-120.0f)<15.0f)
+	{
+		truthval=true;
+	}
+	return truthval;
+}
+
+//Clear recorded people counts
 void pplCounter::clearCounts()
 {
 	ofstream settings1;
@@ -315,19 +309,6 @@ void pplCounter::clearCounts()
 	settings5 << "0";
 	settings5.close();
 	
-}
-bool pplCounter::hasExitedBottom(Path *p)
-{
-	bool truthval=false;
-	if(abs((float)p->getPos().y-120.0f)<15.0f)
-	{
-		truthval=true;
-		/*if((float)p->getVel().y>0.0f)
-		{
-			truthval=true;
-		}*/
-	}
-	return truthval;
 }
 
 //Creates a matrix suitable for input to kmeans 
@@ -377,19 +358,6 @@ vector<cv::Point> pplCounter::getClusterCenters(Mat m,int n)
 	return container;
 }
 
-//Checks for potential collision between 2 contours
-bool pplCounter::hasCollided(Path *traj,Path *traj2)
-{
-	if(traj->getVel().x+traj2->getVel().x<abs(traj->getVel().x)+abs(traj2->getVel().x) || traj->getVel().y+traj2->getVel().y<abs(traj->getVel().y)+abs(traj2->getVel().y))
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
 //Checking if kmeans calculation of centroid positions match
 //The original calculations of the contour centers
 bool pplCounter::checkCentersMatch(vector<Path*> pop,vector<cv::Point> cntrs)
@@ -414,8 +382,7 @@ bool pplCounter::checkCentersMatch(vector<Path*> pop,vector<cv::Point> cntrs)
 				}
 			}
 		}
-		//if the minDist exceeds a mininum value, then the centroid is too far
-		//from a reasonable previous contour's position, so no clustering has occurred
+		//if the minDist exceeds a mininum value, then the centroid is too far from a reasonable previous contour's position, so no clustering has occurred
 		if(minDist==_minDist)
 		{
 			done=true;
@@ -435,6 +402,7 @@ bool pplCounter::checkCentersMatch(vector<Path*> pop,vector<cv::Point> cntrs)
 	return truthval;
 }
 
+//Finds the index of a trajectory in a vector of center points
 int pplCounter::getCloseIndex(Path *traj,vector<cv::Point> cntrs)
 {	
 	int index=0;
@@ -450,6 +418,7 @@ int pplCounter::getCloseIndex(Path *traj,vector<cv::Point> cntrs)
 
 }
 
+//Estimate people in large, unquantified cluster
 int pplCounter::numPersons(vector<cv::Point> v)
 {
 	int num=1;
@@ -463,6 +432,7 @@ int pplCounter::numPersons(vector<cv::Point> v)
 	return num;
 }
 
+//Primary enginer of the algorithm; methodically tracks position and determines potential clustering cases
 void pplCounter::update(Frame *frame)
 {
 	cout << "running" << endl;
@@ -487,7 +457,8 @@ void pplCounter::update(Frame *frame)
 			clearCounts();
 			
 		}
-		if(_analyzeBackground<250) //&& _population.size()==0)
+		//Important calibration phase for determining elevation points across the frame
+		if(_analyzeBackground<250)
 		{
 			for (int i=0;i< frm->points.size();i++) 
 			{
@@ -495,7 +466,8 @@ void pplCounter::update(Frame *frame)
 				avgMap[i]=a+frm->points[i].z;
 			}
 		}
-		if(_analyzeBackground==250) //&& _population.size()==0)
+		//Calculating average elevation at each point in frame
+		if(_analyzeBackground==250)
 		{
 			for(int i=0;i<avgMap.size();i++)
 			{
@@ -503,6 +475,7 @@ void pplCounter::update(Frame *frame)
 				avgMap[i]=(float)a/250.0;
 			}
 		}
+		//Determinig Standard deviation of elevation points
 		if(_analyzeBackground>250 && _analyzeBackground<=500)
 		{
 			for(int i=0;i<frm->points.size();i++)
@@ -512,6 +485,7 @@ void pplCounter::update(Frame *frame)
 			}
 			
 		}
+		//Calculating a standard deviation
 		if(_analyzeBackground==500)
 		{
 			for(int i=0;i<frm->points.size();i++)
@@ -521,6 +495,7 @@ void pplCounter::update(Frame *frame)
 			}
 			
 		}
+		//Next few conditional statements are determining automatic calibration data if nobody stands in frame
 		if(_personsClear<250 && _analyzeBackground==501)
 		{
 			for (int i=0;i< frm->points.size();i++) 
@@ -571,6 +546,7 @@ void pplCounter::update(Frame *frame)
 				}
 			}
 		}
+		//Producing a binary image resembling calibrated elevation data
 		if(_analyzeBackground>=500)
 		{
 		
@@ -588,420 +564,459 @@ void pplCounter::update(Frame *frame)
 			_dMat=Mat(getDim().height,getDim().width,CV_32F,zMapCalib.data());
 			zMapCalib.clear();
 		}
-		// Apply amplitude gain
-		//_iMat=(float)_ampGain*_iMat;
-		// Update background as required
-		
-		// Find foreground by subtraction and convert to binary 
-		// image based on amplitude and depth thresholds
-
-		
-		
-		if(_analyzeBackground>=501){
-		if (!_setBackground) 
+		//Primary tracking algorithms
+		if(_analyzeBackground>=501)
 		{
-			_dMat.copyTo(_bkgndMat);
-			_setBackground = true;
-			cout << endl << "Updated background for people counting process." << endl;
-		}
-		Mat fMat=_dMat.clone();
-		Mat forKMeans=fMat.clone();
-		// Apply morphological open to clean up image
-		fMat.convertTo(_bMat,CV_8U,255.0);
-		Mat morphMat=_bMat.clone();
-		Mat element=getStructuringElement(0,Size(5,5),cv::Point(1,1) );
-		morphologyEx(_bMat,morphMat,2,element);
-	
-		// Draw contours that meet a "person" requirement
-		Mat drawing=Mat::zeros(_dMat.size(),CV_8UC3 );
-		//Mat im_with_keypoints=Mat::zeros(_iMat.size(),CV_8UC3);
-		cvtColor(_dMat*0.5,drawing,CV_GRAY2RGB);
-		Mat cloneofMorph=morphMat.clone();
-		// Find all contours
-		findContours(cloneofMorph,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE,cv::Point(0,0));
-		
-		//Ok
-	
-		if(_population.size()==0)
-		{
-			int num;
-			for(int i=0;i<contours.size();i++)
+			string lineaa2;
+			int enteraa2;
+			int exitaa3;
+			string lineaa3;
+			ifstream onlinesettingsaa2;
+			const char *pathyaa2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/maxcontour.txt";
+			onlinesettingsaa2.open(pathyaa2);
+			if(onlinesettingsaa2.is_open())
 			{
-				if(isPerson(contours[i]))
+				while(getline(onlinesettingsaa2,lineaa2))
 				{
-					Path *input=new Path(300);
-					input->addPos(getCenter(contours[i]));
-					//input.addPos(cv::Point(3,3));
-					//input.addPos(cv::Point(5,4));
-					_population.push_back(input);
-					//cout << _population[i].getVel().x << endl;
-					cout << "1" << endl;
-					//drawContours(drawing,contours,i,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
-				}
-				//Checking for clustered entry of more than 1 person into frame
-				else
-				{
-					if(!contourArea(contours[i])<_maxContourArea)
-					{
-						if(numPersons(contours[i])>1)
-						{
-							Mat inputMat=createKMat(forKMeans);
-							vector<cv::Point> cntrs=getClusterCenters(inputMat,numPersons(contours[i]));
-							for(cv::Point cntr:cntrs)
-							{
-								Path *newtraj=new Path(300);
-								newtraj->addPos(cntr);
-								_population.push_back(newtraj);
-							}
-						}
-					}
-				}
+					int xaa2;
+					stringstream convert(lineaa2);
+					convert >> xaa2;
+					enteraa2=xaa2;
+					_maxContourArea=enteraa2;
+				}		
+				onlinesettingsaa2.close();
 			}
-		}
-		//General process of trajectory logging
-		else
-		{
-			Path *min_traj=new Path(300);
-			vector<cv::Point> min_contour;
-			vector<vector<cv::Point>> contourscopy(contours);
-			vector<Path*> _populationcopy(_population);
-			while(!done)
-			{	
-				float minDistTemp=_minDist;
-				for(vector<cv::Point> contour:contourscopy)
-				{
-					for(int x=0;x<contours.size();x++)
-					{
-						drawContours(drawing,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
-						cv::circle(drawing,getCenter(contours[x]),1,Scalar(0,0,0),1);
-					}
-					cout << "1.5" << endl;
-					for(Path *traj:_populationcopy)
-					{
-						cout << "2" << endl;
-						if(dist(getCenter(contour),traj->getPos())<minDistTemp)
-						{
-							//Check for null
-							minDistTemp=dist(getCenter(contour),traj->getPos());
-							min_traj=traj;
-							min_contour=contour;
-							cout << "3" << endl;
-							passed=true;
-						}
-					}
-				}
-			
-				//Utilize for loop with integer indexes
-				if(passed)
-				{
-					
-					_population[getIndex(_population,min_traj)]->addPos(getCenter(min_contour));
-					cout << "Position of person "+to_string(getIndex(_population,min_traj)+1)+": ("+to_string(_population[getIndex(_population,min_traj)]->getPos().x)+","+to_string(_population[getIndex(_population,min_traj)]->getPos().y)+")" << endl;
-					cout << "Size of Path _fifo: "+to_string(_population[getIndex(_population,min_traj)]->getSize()) << endl;
-					cout << "5" << endl;
-	
-					_populationcopy.erase(_populationcopy.begin()+getIndex(_populationcopy,min_traj));
-					cout << "6" << endl;
-					//Create a bag that contains the residual index
-					contourscopy.erase(contourscopy.begin()+getIndex(contourscopy,min_contour));
-					cout << "7" << endl;
-					passed=false;
-				}
-				if(_populationcopy.size()==0 || contourscopy.size()==0)
-				{
-					done=true;
-					cout << "8" << endl;
-				}
-				if(iter>=contours.size()*_population.size())
-				{
-					done=true;
-				}
-				iter++;
-				
-			}
-		
-			//Now checking any residuals					
-			//This means new contours have popped into frame				
-			if(!contourscopy.size()==0)
+			ifstream onlinesettingsaa3;
+			const char *pathyaa3="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/mincontour.txt";
+			onlinesettingsaa3.open(pathyaa3);
+			if(onlinesettingsaa3.is_open())
 			{
-				//Don't consider condition of what's left in contours exceeds maxcontoutarea
-				cout << "9" << endl;
-				for(vector<cv::Point> contour:contourscopy)
+				while(getline(onlinesettingsaa3,lineaa3))
 				{
-					if(isPerson(contour)) /*&& passed)*/
+					int xaa3;
+					stringstream convert(lineaa3);
+					convert >> xaa3;
+					exitaa3=xaa3;
+					_minContourArea=exitaa3;
+				}		
+				onlinesettingsaa3.close();
+			}			
+			if (!_setBackground) 
+			{
+				_dMat.copyTo(_bkgndMat);
+				_setBackground = true;
+				cout << endl << "Updated background for people counting process." << endl;
+			}
+			Mat fMat=_dMat.clone();
+			Mat forKMeans=fMat.clone();
+			// Apply morphological open to clean up image
+			fMat.convertTo(_bMat,CV_8U,255.0);
+			Mat morphMat=_bMat.clone();
+			Mat element=getStructuringElement(0,Size(5,5),cv::Point(1,1) );
+			morphologyEx(_bMat,morphMat,2,element);
+			// Draw contours that meet a "person" requirement
+			Mat drawing=Mat::zeros(_dMat.size(),CV_8UC3 );
+			cvtColor(_dMat*0.5,drawing,CV_GRAY2RGB);
+			Mat cloneofMorph=morphMat.clone();
+			// Find all contours
+			findContours(cloneofMorph,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE,cv::Point(0,0));
+			if(_population.size()==0)
+			{
+				int num;
+				for(int i=0;i<contours.size();i++)
+				{
+					if(isPerson(contours[i]))
 					{
-						Path *newtraj=new Path(300);
-						newtraj->addPos(getCenter(contour));
-						_population.push_back(newtraj);
-						cout << "10" << endl;
+						Path *input=new Path(300);
+						input->addPos(getCenter(contours[i]));
+						_population.push_back(input);
 					}
+					//Checking for clustered entry of more than 1 person into frame
 					else
 					{
-						if(numPersons(contour)>1)
+						//Utilizing Kmeans to estimate persons and positions in large clusters
+						if(!contourArea(contours[i])<_maxContourArea)
 						{
-							Mat inputMat=createKMat(forKMeans);
-							vector<cv::Point> cntrs=getClusterCenters(inputMat,numPersons(contour));
-							for(cv::Point cntr:cntrs)
+							if(numPersons(contours[i])>1)
 							{
-								Path *newtraj=new Path(300);
-								newtraj->addPos(cntr);
-								_population.push_back(newtraj);
+								Mat inputMat=createKMat(forKMeans);
+								vector<cv::Point> cntrs=getClusterCenters(inputMat,numPersons(contours[i]));
+								for(cv::Point cntr:cntrs)
+								{
+									Path *newtraj=new Path(300);
+									newtraj->addPos(cntr);
+									_population.push_back(newtraj);
+								}
 							}
 						}
 					}
 				}
 			}
-				
-			//This means people have possibly clustered together or left the frame
-			if(!_populationcopy.size()==0)
+			//General process of trajectory logging
+			else
 			{
-				cout << "11" << endl;	
-				//First check the case where someone simply exits
-				for(Path *traj:_populationcopy)
+				Path *min_traj=new Path(300);
+				vector<cv::Point> min_contour;
+				vector<vector<cv::Point>> contourscopy(contours);
+				vector<Path*> _populationcopy(_population);
+				while(!done)
 				{	
-					//Testing the case where someone simply exited frame
-					if(hasExitedRight(traj))
+					float minDistTemp=_minDist;
+					for(vector<cv::Point> contour:contourscopy)
 					{
-						_population.erase(_population.begin()+getIndex(_population,traj));
-						cout << "12" << endl;
-						_rightExit++;	
+						for(int x=0;x<contours.size();x++)
+						{
+							drawContours(drawing,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
+							cv::circle(drawing,getCenter(contours[x]),1,Scalar(0,0,0),1);
+						}
+						for(Path *traj:_populationcopy)
+						{
+							//Matching process of contours and trajectories
+							if(dist(getCenter(contour),traj->getPos())<minDistTemp)
+							{
+								//Check for null
+								minDistTemp=dist(getCenter(contour),traj->getPos());
+								min_traj=traj;
+								min_contour=contour;
+								passed=true;
+							}
+						}
 					}
-					else if(hasExitedLeft(traj))
+			
+					//Utilize for loop with integer indexes; Update positions of person trajectories
+					if(passed)
 					{
-						_population.erase(_population.begin()+getIndex(_population,traj));
-						cout << "12" << endl;
-						_leftExit++;	
+					
+						_population[getIndex(_population,min_traj)]->addPos(getCenter(min_contour));
+						cout << "Position of person "+to_string(getIndex(_population,min_traj)+1)+": ("+to_string(_population[getIndex(_population,min_traj)]->getPos().x)+","+to_string(_population[getIndex(_population,min_traj)]->getPos().y)+")" << endl;
+						cout << "Size of Path _fifo: "+to_string(_population[getIndex(_population,min_traj)]->getSize()) << endl;
+						_populationcopy.erase(_populationcopy.begin()+getIndex(_populationcopy,min_traj));
+						//Create a bag that contains the residual index
+						contourscopy.erase(contourscopy.begin()+getIndex(contourscopy,min_contour));
+						passed=false;
 					}
-					else if(hasExitedTop(traj))
+					if(_populationcopy.size()==0 || contourscopy.size()==0)
 					{
-						_population.erase(_population.begin()+getIndex(_population,traj));
-						cout << "12" << endl;
-						_topExit++;	
+						done=true;
 					}
-					else if(hasExitedBottom(traj))
+					if(iter>=contours.size()*_population.size())
 					{
-						_population.erase(_population.begin()+getIndex(_population,traj));
-						cout << "12.1" << endl;
-						enterCase++;
-						_bottomExit++;	
+						done=true;
+					}
+					iter++;
+				
+				}
+		
+				//Now checking any residuals					
+				//This means new contours have popped into frame					
+				if(!contourscopy.size()==0)
+				{
+					//Don't consider condition of what's left in contours exceeds maxcontoutarea
+					for(vector<cv::Point> contour:contourscopy)
+					{
+						if(isPerson(contour))
+						{
+							Path *newtraj=new Path(300);
+							newtraj->addPos(getCenter(contour));
+							_population.push_back(newtraj);
+						}
+						//Consider case if large cluster popped into frame
+						else
+						{
+							if(numPersons(contour)>1)
+							{
+								Mat inputMat=createKMat(forKMeans);
+								vector<cv::Point> cntrs=getClusterCenters(inputMat,numPersons(contour));
+								for(cv::Point cntr:cntrs)
+								{
+									Path *newtraj=new Path(300);
+									newtraj->addPos(cntr);
+									_population.push_back(newtraj);
+								}
+							}
+						}
 					}
 				}
-
-				if(_population.size()>=contours.size()+1)
-				{
-					cout << "13" << endl;
-					Mat inputMat=createKMat(forKMeans);
-					vector<cv::Point> cntrs;
-					if(contours.size()!=0)
-					{
-						cntrs=getClusterCenters(inputMat,_population.size());
-						for(cv::Point cntr:cntrs)
+				
+				//This means people have possibly clustered together or left the frame
+				if(!_populationcopy.size()==0)
+				{	
+					//First check the case where someone simply exits
+					for(Path *traj:_populationcopy)
+					{	
+						//Testing the case where someone simply exited frame
+						string linea2;
+						int entera2;
+						int exita3;
+						string linea3;
+						ifstream onlinesettingsa2;
+						const char *pathya2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/enterpos.txt";
+						onlinesettingsa2.open(pathya2);
+						if(onlinesettingsa2.is_open())
 						{
-							cout<< "Predicted Point: "+to_string(cntr.x)+","+to_string(cntr.y) << endl;
-							cv::circle(drawing,cntr,1,Scalar(0,255,0),1);
-						}
-					
-						if(!checkCentersMatch(_population,cntrs))
-						{
-							cout << "Check" << endl;
-							for(Path *traj:_populationcopy)
+							while(getline(onlinesettingsa2,linea2))
 							{
-								_population.erase(_population.begin()+getIndex(_population,traj));
-								cout << "14" << endl;
-
-							}
-		
+								int xa2;
+								stringstream convert(linea2);
+								convert >> xa2;
+								entera2=xa2;
+							}		
+							onlinesettingsa2.close();
+						}
+						ifstream onlinesettingsa3;
+						const char *pathya3="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/exitpos.txt";
+						onlinesettingsa3.open(pathya3);
+						if(onlinesettingsa3.is_open())
+						{
+							while(getline(onlinesettingsa3,linea3))
+							{
+								int xa3;
+								stringstream convert(linea3);
+								convert >> xa3;
+								exita3=xa3;
+							}		
+							onlinesettingsa3.close();
+						}
+						if(hasExitedRight(traj))
+						{
+							_population.erase(_population.begin()+getIndex(_population,traj));
+							_rightExit++;	
+						}
+						else if(hasExitedLeft(traj))
+						{
+							_population.erase(_population.begin()+getIndex(_population,traj));
+							_leftExit++;	
+						}
+						else if(hasExitedTop(traj))
+						{
+							_population.erase(_population.begin()+getIndex(_population,traj));
+							_topExit++;	
+						}
+						else if(hasExitedBottom(traj))
+						{
+							_population.erase(_population.begin()+getIndex(_population,traj));
+							//Program currently recognizes a entrance case if figure leaves frame towards bottom 
+							_bottomExit++;	
+						}
+						if(entera2==1)
+						{
+							enterCase=_rightExit;
+						}
+						if(entera2==2)
+						{
+							enterCase=_leftExit;
+						}
+						if(entera2==3)
+						{
+							enterCase=_topExit;
+						}
+						if(entera2==4)
+						{
+							enterCase=_bottomExit;
+						}
+						if(exita3==1)
+						{
+							exitCase=_rightExit;
+						}
+						if(exita3==2)
+						{
+							exitCase=_leftExit;
+						}
+						if(exita3==3)
+						{
+							exitCase=_topExit;
+						}
+						if(exita3==4)
+						{
+							exitCase=_bottomExit;
 						}
 						else
 						{
-							for(Path *traj:_populationcopy)
-							{
-								_population[getIndex(_population,traj)]->addPos(cv::Point(cntrs[getCloseIndex(traj,cntrs)].x,cntrs[getCloseIndex(traj,cntrs)].y));
-								cout << "15" << endl;
-							}
+							enterCase=_bottomExit;
+							exitCase=_topExit;
 						}
-						cout << "BLOBBING HAS OCCURRED" << endl;
+					}
+					//Indication that a cluster has occurred
+					if(_population.size()>=contours.size()+1)
+					{
+						Mat inputMat=createKMat(forKMeans);
+						vector<cv::Point> cntrs;
+						if(contours.size()!=0)
+						{
+							cntrs=getClusterCenters(inputMat,_population.size());
+							for(cv::Point cntr:cntrs)
+							{
+								cout<< "Predicted Point: "+to_string(cntr.x)+","+to_string(cntr.y) << endl;
+								cv::circle(drawing,cntr,1,Scalar(0,255,0),1);
+							}
+					
+							if(!checkCentersMatch(_population,cntrs))
+							{
+								for(Path *traj:_populationcopy)
+								{
+									_population.erase(_population.begin()+getIndex(_population,traj));
+	
+								}
+		
+							}
+							else
+							{
+								for(Path *traj:_populationcopy)
+								{
+									_population[getIndex(_population,traj)]->addPos(cv::Point(cntrs[getCloseIndex(traj,cntrs)].x,cntrs[getCloseIndex(traj,cntrs)].y));
+								}
+							}
+							cout << "BLOBBING HAS OCCURRED" << endl;
+						}
+					}
+				
+				}
+
+			}
+			putText(drawing,"Count = "+to_string(_population.size())+","+to_string(contours.size()),cv::Point(70,10),FONT_HERSHEY_PLAIN,.75,Scalar(0,0,255));
+			//imshow("Binary",_bMat);
+			//imshow("Amplitude",_iMat); 
+			//imshow("Morph",morphMat);
+			imshow("Draw",drawing);}
+			const char *pathy="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/count.txt";
+			ofstream file;
+			file.open(pathy);
+			string data(to_string(_population.size()));
+			file << data;
+			file.close();
+			const char *pathy3="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/entercase.txt";
+			ofstream filea1;
+			filea1.open(pathy3);
+			string dataa1(to_string(enterCase-exitCase));
+			filea1 << dataa1;
+			filea1.close();
+			if(_analyzeBackground<501)
+			{
+				cout << "CALIBRATING. DO NOT STAND IN CAMERA VIEW." << endl;
+				_analyzeBackground++;
+			
+			}
+			//Creating automatic recalibration data vectors
+			if(_analyzeBackground>=501)
+			{
+				_personsClear++;
+				if(_personsClear>501)
+				{
+					_personsClear=0;
+					fill(avgMap2.begin(),avgMap2.end(),0.0);
+					fill(stdDev2.begin(),stdDev2.end(),0.0);
+				}
+				if(_population.size()>0)
+				{
+					_personsClear=0;
+					fill(avgMap2.begin(),avgMap2.end(),0.0);
+					fill(stdDev2.begin(),stdDev2.end(),0.0);
+				}
+			}
+			//Recalibration if online settings determine so
+			currentTime=chrono::system_clock::now();
+			elapsedTime=currentTime-startTime;
+			_elapsedSeconds=elapsedTime.count();
+			//Next few conditional statements help to update population history and graph
+			if(_elapsedSeconds>10.0 && _elapsedSeconds<11.0)
+			{
+				const char *path1="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/15a.txt";
+				ofstream file1;
+				file1.open(path1);
+				string data1(to_string(enterCase-exitCase));
+				file1 << data1;
+				file1.close();
+				time_t end_time=chrono::system_clock::to_time_t(currentTime);
+				if(_go)
+				{
+					timeData.push_back(ctime(&end_time));
+					timeData.push_back(to_string(enterCase-exitCase));
+					_go=false;
+				}
+			}
+			if(_elapsedSeconds>20.0 && _elapsedSeconds<21.0)
+			{
+				const char *path2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/30a.txt";
+				ofstream file2;
+				file2.open(path2);
+				string data2(to_string(enterCase-exitCase));
+				file2 << data2;
+				file2.close();
+				time_t end_time=chrono::system_clock::to_time_t(currentTime);
+				if(!_go)
+				{
+					timeData.push_back(ctime(&end_time));
+					timeData.push_back(to_string(enterCase-exitCase));
+					_go=true;
+				}
+			}
+			if(_elapsedSeconds>30.0 && _elapsedSeconds<31.0)
+			{
+				const char *path3="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/45a.txt";
+				ofstream file3;
+				file3.open(path3);
+				string data3(to_string(enterCase-exitCase));
+				file3 << data3;
+				file3.close();
+				time_t end_time=chrono::system_clock::to_time_t(currentTime);
+				if(_go)
+				{
+					timeData.push_back(ctime(&end_time));
+					timeData.push_back(to_string(enterCase-exitCase));
+					_go=false;
+				}
+			}
+			if(_elapsedSeconds>40.0 && _elapsedSeconds<41.0)
+			{
+				const char *path4="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/60a.txt";
+				ofstream file4;
+				file4.open(path4);
+				string data4(to_string(enterCase-exitCase));
+				file4 << data4;
+				file4.close();
+				time_t end_time=chrono::system_clock::to_time_t(currentTime);
+				if(!_go)
+				{
+					timeData.push_back(ctime(&end_time));
+					timeData.push_back(to_string(enterCase-exitCase));
+					_go=true;
+				}
+			}
+			if(_elapsedSeconds>50.0 && _elapsedSeconds<51.0)
+			{
+				const char *path5="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/75a.txt";
+				ofstream file5;
+				file5.open(path5);
+				string data5(to_string(enterCase-exitCase));
+				file5 << data5;
+				file5.close();
+				time_t end_time=chrono::system_clock::to_time_t(currentTime);
+				if(_go)
+				{
+					timeData.push_back(ctime(&end_time));
+					timeData.push_back(to_string(enterCase-exitCase));
+					startTime=chrono::system_clock::now();
+				}
+			}
+			const char *path6="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/timeData.txt";
+				ofstream file6;
+				file6.open(path6);
+				string s;
+				for(int i=0;i<timeData.size();i++)
+				{
+					if(i%2==0)
+					{
+						s+=timeData[i]+"Number of people:";
+					}
+					else
+					{
+						s+=timeData[i]+"\n";
 					}
 				}
-				
-			}
-
-		}
-		//Catches any logical errors associated with _population collection
-		/*if(contours.size()==0)
-		{
-			for(Path *traj:_population)
-			{
-				_population.erase(_population.begin()+getIndex(_population,traj));
-			}
-		}*/
-		putText(drawing,"Count = "+to_string(_population.size())+","+to_string(contours.size()),cv::Point(70,10),FONT_HERSHEY_PLAIN,.75,Scalar(0,0,255));
-		//imshow("Binary",_bMat);
-		//imshow("Amplitude",_iMat); 
-		imshow("Draw",drawing);}
-		//imshow("Morph",morphMat);
-		//Notes: can also use initial _fifo.size() difference to determine time of entrance
-		const char *pathy="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/count.txt";
-		ofstream file;
-		file.open(pathy);
-		string data(to_string(_population.size()));
-		file << data;
-		file.close();
-		ifstream onlinesettings;
-		const char *pathy2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/reCalib.txt";
-		onlinesettings.open(pathy2);
-		if(onlinesettings.is_open())
-		{
-			while(getline(onlinesettings,line2))
-			{
-				int x;
-				stringstream convert(line2);
-				convert >> x;
-				_toCalibrate=x;
-				ofstream onlinesettings2;
-				onlinesettings2.open(pathy2);
-				string data(to_string(0));
-				onlinesettings2 << data;
-				onlinesettings2.close();
-			}
-			onlinesettings.close();
-		}
-		if(_analyzeBackground<501) //&& _population.size()==0)
-		{
-			cout << "CALIBRATING. DO NOT STAND IN CAMERA VIEW." << endl;
-			_analyzeBackground++;
-			/*if(_analyzeBackground>=500)
-			{
-				_go=true;
-				//_analyzeBackground=0;
-			}*/
-			
-		}
-		if(_analyzeBackground>=501)
-		{
-			_personsClear++;
-			if(_personsClear>501)
-			{
-				_personsClear=0;
-				fill(avgMap2.begin(),avgMap2.end(),0.0);
-				fill(stdDev2.begin(),stdDev2.end(),0.0);
-			}
-			if(_population.size()>0)
-			{
-				_personsClear=0;
-				fill(avgMap2.begin(),avgMap2.end(),0.0);
-				fill(stdDev2.begin(),stdDev2.end(),0.0);
-			}
-		}
-	
-		if(_toCalibrate==1)
-		{
-			//_analyzeBackground=0;
-			_toCalibrate=0;
-			_personsClear=0;
-		}
-		currentTime=chrono::system_clock::now();
-		elapsedTime=currentTime-startTime;
-		_elapsedSeconds=elapsedTime.count();
-		if(_elapsedSeconds>10.0 && _elapsedSeconds<11.0)
-		{
-			const char *path1="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/15a.txt";
-			ofstream file1;
-			file1.open(path1);
-			string data1(to_string(enterCase));
-			file1 << data1;
-			file1.close();
-			time_t end_time=chrono::system_clock::to_time_t(currentTime);
-			if(_go)
-			{
-				timeData.push_back(ctime(&end_time));
-				timeData.push_back(to_string(enterCase));
-				_go=false;
-			}
-		}
-		if(_elapsedSeconds>20.0 && _elapsedSeconds<21.0)
-		{
-			const char *path2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/30a.txt";
-			ofstream file2;
-			file2.open(path2);
-			string data2(to_string(enterCase));
-			file2 << data2;
-			file2.close();
-			time_t end_time=chrono::system_clock::to_time_t(currentTime);
-			if(!_go)
-			{
-				timeData.push_back(ctime(&end_time));
-				timeData.push_back(to_string(enterCase));
-				_go=true;
-			}
-		}
-		if(_elapsedSeconds>30.0 && _elapsedSeconds<31.0)
-		{
-			const char *path3="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/45a.txt";
-			ofstream file3;
-			file3.open(path3);
-			string data3(to_string(enterCase));
-			file3 << data3;
-			file3.close();
-			time_t end_time=chrono::system_clock::to_time_t(currentTime);
-			if(_go)
-			{
-				timeData.push_back(ctime(&end_time));
-				timeData.push_back(to_string(enterCase));
-				_go=false;
-			}
-		}
-		if(_elapsedSeconds>40.0 && _elapsedSeconds<41.0)
-		{
-			const char *path4="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/60a.txt";
-			ofstream file4;
-			file4.open(path4);
-			string data4(to_string(enterCase));
-			file4 << data4;
-			file4.close();
-			time_t end_time=chrono::system_clock::to_time_t(currentTime);
-			if(!_go)
-			{
-				timeData.push_back(ctime(&end_time));
-				timeData.push_back(to_string(enterCase));
-				_go=true;
-			}
-		}
-		if(_elapsedSeconds>50.0 && _elapsedSeconds<51.0)
-		{
-			const char *path5="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/75a.txt";
-			ofstream file5;
-			file5.open(path5);
-			string data5(to_string(enterCase));
-			file5 << data5;
-			file5.close();
-			time_t end_time=chrono::system_clock::to_time_t(currentTime);
-			if(_go)
-			{
-				timeData.push_back(ctime(&end_time));
-				timeData.push_back(to_string(enterCase));
-				startTime=chrono::system_clock::now();
-			}
-		}
-		const char *path6="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/timeData.txt";
-			ofstream file6;
-			file6.open(path6);
-			string s;
-			for(int i=0;i<timeData.size();i++)
-			{
-				if(i%2==0)
-				{
-					s+=timeData[i]+"Number of people:";
-				}
-				else
-				{
-					s+=timeData[i]+"\n";
-				}
-			}
-			string data6(s);
-			file6 << data6;
-			file6.close();
+				string data6(s);
+				file6 << data6;
+				file6.close();
 		
-	}
+		}
 }
 #undef __PPLCOUNTER_CPP__

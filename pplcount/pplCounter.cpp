@@ -366,7 +366,7 @@ bool pplCounter::checkCentersMatch(vector<Path*> pop,vector<cv::Point> cntrs)
 	bool truthval=true;
 	float minDist=_minDist;
 	int miniindex;
-	Path *min_p=new Path(300);
+	Path *min_p=new Path(20);
 	cv::Point min_cntr;
 	while(!done)
 	{
@@ -627,7 +627,7 @@ void pplCounter::update(Frame *frame)
 				{
 					if(isPerson(contours[i]))
 					{
-						Path *input=new Path(300);
+						Path *input=new Path(20);
 						input->addPos(getCenter(contours[i]));
 						_population.push_back(input);
 					}
@@ -643,7 +643,7 @@ void pplCounter::update(Frame *frame)
 								vector<cv::Point> cntrs=getClusterCenters(inputMat,numPersons(contours[i]));
 								for(cv::Point cntr:cntrs)
 								{
-									Path *newtraj=new Path(300);
+									Path *newtraj=new Path(20);
 									newtraj->addPos(cntr);
 									_population.push_back(newtraj);
 								}
@@ -655,7 +655,7 @@ void pplCounter::update(Frame *frame)
 			//General process of trajectory logging
 			else
 			{
-				Path *min_traj=new Path(300);
+				Path *min_traj=new Path(20);
 				vector<cv::Point> min_contour;
 				vector<vector<cv::Point>> contourscopy(contours);
 				vector<Path*> _populationcopy(_population);
@@ -666,8 +666,8 @@ void pplCounter::update(Frame *frame)
 					{
 						for(int x=0;x<contours.size();x++)
 						{
-							drawContours(drawing,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
-							cv::circle(drawing,getCenter(contours[x]),1,Scalar(0,0,0),1);
+							//drawContours(drawing,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
+							//cv::circle(drawing,getCenter(contours[x]),1,Scalar(0,0,0),1);
 						}
 						for(Path *traj:_populationcopy)
 						{
@@ -704,6 +704,14 @@ void pplCounter::update(Frame *frame)
 						done=true;
 					}
 					iter++;
+					for(int x=0;x<_population.size();x++)
+					{
+						int _popsize=_population[x]->getSize();
+						for(int y=0;y<_popsize;y++)
+						{
+							cv::circle(drawing,_population[x]->getPos(y),1,Scalar(255,0,255),1);
+						}
+					}
 				
 				}
 		
@@ -716,7 +724,7 @@ void pplCounter::update(Frame *frame)
 					{
 						if(isPerson(contour))
 						{
-							Path *newtraj=new Path(300);
+							Path *newtraj=new Path(20);
 							newtraj->addPos(getCenter(contour));
 							_population.push_back(newtraj);
 						}
@@ -729,7 +737,7 @@ void pplCounter::update(Frame *frame)
 								vector<cv::Point> cntrs=getClusterCenters(inputMat,numPersons(contour));
 								for(cv::Point cntr:cntrs)
 								{
-									Path *newtraj=new Path(300);
+									Path *newtraj=new Path(20);
 									newtraj->addPos(cntr);
 									_population.push_back(newtraj);
 								}
@@ -930,7 +938,14 @@ void pplCounter::update(Frame *frame)
 				if(_go)
 				{
 					timeData.push_back(ctime(&end_time));
-					timeData.push_back(to_string(enterCase-exitCase));
+					if(enterCase>exitCase)
+					{
+						timeData.push_back(to_string(enterCase-exitCase));
+					}
+					else
+					{
+						timeData.push_back(to_string(0));
+					}
 					_go=false;
 				}
 			}
@@ -946,7 +961,14 @@ void pplCounter::update(Frame *frame)
 				if(!_go)
 				{
 					timeData.push_back(ctime(&end_time));
-					timeData.push_back(to_string(enterCase-exitCase));
+					if(enterCase>exitCase)
+					{
+						timeData.push_back(to_string(enterCase-exitCase));
+					}
+					else
+					{
+						timeData.push_back(to_string(0));
+					}
 					_go=true;
 				}
 			}
@@ -962,7 +984,14 @@ void pplCounter::update(Frame *frame)
 				if(_go)
 				{
 					timeData.push_back(ctime(&end_time));
-					timeData.push_back(to_string(enterCase-exitCase));
+					if(enterCase>exitCase)
+					{
+						timeData.push_back(to_string(enterCase-exitCase));
+					}
+					else
+					{
+						timeData.push_back(to_string(0));
+					}
 					_go=false;
 				}
 			}
@@ -978,7 +1007,14 @@ void pplCounter::update(Frame *frame)
 				if(!_go)
 				{
 					timeData.push_back(ctime(&end_time));
-					timeData.push_back(to_string(enterCase-exitCase));
+					if(enterCase>exitCase)
+					{
+						timeData.push_back(to_string(enterCase-exitCase));
+					}
+					else
+					{
+						timeData.push_back(to_string(0));
+					}
 					_go=true;
 				}
 			}
@@ -994,7 +1030,14 @@ void pplCounter::update(Frame *frame)
 				if(_go)
 				{
 					timeData.push_back(ctime(&end_time));
-					timeData.push_back(to_string(enterCase-exitCase));
+					if(enterCase>exitCase)
+					{
+						timeData.push_back(to_string(enterCase-exitCase));
+					}
+					else
+					{
+						timeData.push_back(to_string(0));
+					}
 					startTime=chrono::system_clock::now();
 				}
 			}

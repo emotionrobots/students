@@ -38,6 +38,7 @@ pplCounter::pplCounter(int w, int h) : TOFApp(w, h)
 			stdDev.push_back(0.0);
 			avgMap2.push_back(0.0);
 			stdDev2.push_back(0.0);
+			iMapCalib.push_back(0.0);
 		}
 	}
 	
@@ -49,7 +50,8 @@ void pplCounter::initDisplay()
 	//namedWindow( "Binary", WINDOW_NORMAL );
 	//namedWindow( "Morph", WINDOW_NORMAL );
 	//namedWindow( "Controls", WINDOW_NORMAL);
-	namedWindow( "Draw", WINDOW_NORMAL );
+	namedWindow( "Binary", WINDOW_NORMAL );
+	namedWindow( "Actual", WINDOW_NORMAL );
 	string line;
 	//Reading from calibrationSettings.txt
 	ifstream calibrationSettings;
@@ -233,10 +235,12 @@ bool pplCounter::hasExitedRight(Path *p)
 	bool truthval=false;
 	//If distance from exit edge is close enough
 	//to an arbitrary value
-	if(abs((float)p->getPos().x-160.0f)<15.0f)
+	if(abs((float)p->getPos().x-160.0f)<20.0f)
 	{
-		truthval=true;
-
+		if((float)p->getVel().x>0.0f)
+		{
+			truthval=true;
+		}
 	}
 
 	return truthval;
@@ -246,9 +250,12 @@ bool pplCounter::hasExitedRight(Path *p)
 bool pplCounter::hasExitedLeft(Path *p)
 {
 	bool truthval=false;
-	if(abs((float)p->getPos().x-0.0f)<15.0f)
+	if(abs((float)p->getPos().x-0.0f)<20.0f)
 	{
-		truthval=true;
+		if((float)p->getVel().x<0.0f)
+		{
+			truthval=true;
+		}
 	}
 	return truthval;
 }
@@ -257,9 +264,12 @@ bool pplCounter::hasExitedTop(Path *p)
 {
 	bool truthval=false;
 
-	if(abs((float)p->getPos().y-0.0f)<15.0f)
+	if(abs((float)p->getPos().y-0.0f)<20.0f)
 	{
-		truthval=true;
+		if((float)p->getVel().y<0.0f)
+		{
+			truthval=true;
+		}
 	}
 	return truthval;
 }
@@ -268,9 +278,12 @@ bool pplCounter::hasExitedBottom(Path *p)
 {
 	bool truthval=false;
 
-	if(abs((float)p->getPos().y-120.0f)<15.0f)
+	if(abs((float)p->getPos().y-120.0f)<20.0f)
 	{
-		truthval=true;
+		if((float)p->getVel().y>0.0f)
+		{
+			truthval=true;
+		}
 	}
 	return truthval;
 }
@@ -458,6 +471,10 @@ void pplCounter::update(Frame *frame)
 			
 		}
 		//Important calibration phase for determining elevation points across the frame
+		for (int i=0;i< frm->points.size();i++) 
+			{
+				iMapCalib[i]=frm->points[i].i;
+			}
 		if(_analyzeBackground<250)
 		{
 			for (int i=0;i< frm->points.size();i++) 
@@ -562,6 +579,8 @@ void pplCounter::update(Frame *frame)
 				}
 			}	
 			_dMat=Mat(getDim().height,getDim().width,CV_32F,zMapCalib.data());
+			_iMat=Mat(getDim().height,getDim().width,CV_32F,iMapCalib.data());
+			iMapCalib.clear();
 			zMapCalib.clear();
 		}
 		//Primary tracking algorithms
@@ -616,7 +635,9 @@ void pplCounter::update(Frame *frame)
 			morphologyEx(_bMat,morphMat,2,element);
 			// Draw contours that meet a "person" requirement
 			Mat drawing=Mat::zeros(_dMat.size(),CV_8UC3 );
+			Mat drawing2=Mat::zeros(_iMat.size(),CV_8UC3);
 			cvtColor(_dMat*0.5,drawing,CV_GRAY2RGB);
+			cvtColor(_iMat*50,drawing2,CV_GRAY2RGB);
 			Mat cloneofMorph=morphMat.clone();
 			// Find all contours
 			findContours(cloneofMorph,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE,cv::Point(0,0));
@@ -666,8 +687,10 @@ void pplCounter::update(Frame *frame)
 					{
 						for(int x=0;x<contours.size();x++)
 						{
-							//drawContours(drawing,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
-							//cv::circle(drawing,getCenter(contours[x]),1,Scalar(0,0,0),1);
+							//drawContours(drawing2,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
+							drawContours(drawing,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
+							cv::circle(drawing2,getCenter(contours[x]),1,Scalar(0,0,0),1);
+							cv::circle(drawing,getCenter(contours[x]),1,Scalar(0,0,0),1);
 						}
 						for(Path *traj:_populationcopy)
 						{
@@ -709,7 +732,7 @@ void pplCounter::update(Frame *frame)
 						int _popsize=_population[x]->getSize();
 						for(int y=0;y<_popsize-1;y++)
 						{
-							//cv::circle(drawing,_population[x]->getPos(y),1,Scalar(0,0,255),1);
+							cv::line(drawing2,_population[x]->getPos(y),_population[x]->getPos(y+1),Scalar(255,0,0));
 							cv::line(drawing,_population[x]->getPos(y),_population[x]->getPos(y+1),Scalar(255,0,0));
 						}
 					}
@@ -856,7 +879,7 @@ void pplCounter::update(Frame *frame)
 							for(cv::Point cntr:cntrs)
 							{
 								cout<< "Predicted Point: "+to_string(cntr.x)+","+to_string(cntr.y) << endl;
-								cv::circle(drawing,cntr,1,Scalar(0,255,0),1);
+								
 							}
 					
 							if(!checkCentersMatch(_population,cntrs))
@@ -882,11 +905,14 @@ void pplCounter::update(Frame *frame)
 				}
 
 			}
+			putText(drawing2,"Count = "+to_string(_population.size())+","+to_string(contours.size()),cv::Point(70,10),FONT_HERSHEY_PLAIN,.75,Scalar(0,0,255));
 			putText(drawing,"Count = "+to_string(_population.size())+","+to_string(contours.size()),cv::Point(70,10),FONT_HERSHEY_PLAIN,.75,Scalar(0,0,255));
 			//imshow("Binary",_bMat);
 			//imshow("Amplitude",_iMat); 
 			//imshow("Morph",morphMat);
-			imshow("Draw",drawing);}
+			imshow("Binary",drawing);
+			imshow("Actual",drawing2);
+	}
 			const char *pathy="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/count.txt";
 			ofstream file;
 			file.open(pathy);

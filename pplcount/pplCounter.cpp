@@ -472,9 +472,9 @@ void pplCounter::update(Frame *frame)
 		}
 		//Important calibration phase for determining elevation points across the frame
 		for (int i=0;i< frm->points.size();i++) 
-			{
-				iMapCalib[i]=frm->points[i].i;
-			}
+		{
+			iMapCalib[i]=frm->points[i].z;
+		}
 		if(_analyzeBackground<250)
 		{
 			for (int i=0;i< frm->points.size();i++) 
@@ -637,7 +637,7 @@ void pplCounter::update(Frame *frame)
 			Mat drawing=Mat::zeros(_dMat.size(),CV_8UC3 );
 			Mat drawing2=Mat::zeros(_iMat.size(),CV_8UC3);
 			cvtColor(_dMat*0.5,drawing,CV_GRAY2RGB);
-			cvtColor(_iMat*50,drawing2,CV_GRAY2RGB);
+			cvtColor(_iMat*.2,drawing2,CV_GRAY2RGB);
 			Mat cloneofMorph=morphMat.clone();
 			// Find all contours
 			findContours(cloneofMorph,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE,cv::Point(0,0));
@@ -687,10 +687,12 @@ void pplCounter::update(Frame *frame)
 					{
 						for(int x=0;x<contours.size();x++)
 						{
-							//drawContours(drawing2,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
 							drawContours(drawing,contours,x,Scalar(0,0,255),2,8,vector<Vec4i>(),0,cv::Point());
-							cv::circle(drawing2,getCenter(contours[x]),1,Scalar(0,0,0),1);
-							cv::circle(drawing,getCenter(contours[x]),1,Scalar(0,0,0),1);
+						}
+						for(int x=0;x<_population.size();x++)
+						{
+							cv::rectangle(drawing2,cv::Point((_population[x]->getPos()).x-1,(_population[x]->getPos()).y-1),cv::Point((_population[x]->getPos()).x+1,(_population[x]->getPos()).y+1),Scalar(0,255,0),3);
+							cv::rectangle(drawing,cv::Point((_population[x]->getPos()).x-1,(_population[x]->getPos()).y-1),cv::Point((_population[x]->getPos()).x+1,(_population[x]->getPos()).y+1),Scalar(0,255,0),3);
 						}
 						for(Path *traj:_populationcopy)
 						{
@@ -905,7 +907,7 @@ void pplCounter::update(Frame *frame)
 				}
 
 			}
-			putText(drawing2,"Count = "+to_string(_population.size())+","+to_string(contours.size()),cv::Point(70,10),FONT_HERSHEY_PLAIN,.75,Scalar(0,0,255));
+			putText(drawing2,"Count = "+to_string(enterCase-exitCase),cv::Point(70,10),FONT_HERSHEY_PLAIN,.75,Scalar(0,0,255));
 			putText(drawing,"Count = "+to_string(_population.size())+","+to_string(contours.size()),cv::Point(70,10),FONT_HERSHEY_PLAIN,.75,Scalar(0,0,255));
 			//imshow("Binary",_bMat);
 			//imshow("Amplitude",_iMat); 

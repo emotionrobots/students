@@ -44,7 +44,6 @@
     "v8_use_snapshot": "true",
     "want_separate_host_toolset": 0,
     "nodedir": "/home/e-motion/.node-gyp/4.2.6",
-    "copy_dev_lib": "true",
     "standalone_static_library": 1
   }
 }

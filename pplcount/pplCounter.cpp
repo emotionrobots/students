@@ -734,7 +734,7 @@ void pplCounter::update(Frame *frame)
 						int _popsize=_population[x]->getSize();
 						for(int y=0;y<_popsize-1;y++)
 						{
-							cv::line(drawing2,_population[x]->getPos(y),_population[x]->getPos(y+1),Scalar(255,0,0));
+							cv::line(drawing2,_population[x]->getPos(y),_population[x]->getPos(y+1),Scalar(255,255,255));
 							cv::line(drawing,_population[x]->getPos(y),_population[x]->getPos(y+1),Scalar(255,0,0));
 						}
 					}
@@ -954,8 +954,10 @@ void pplCounter::update(Frame *frame)
 			currentTime=chrono::system_clock::now();
 			elapsedTime=currentTime-startTime;
 			_elapsedSeconds=elapsedTime.count();
+			bool ahead=true;
+			string s;
 			//Next few conditional statements help to update population history and graph
-			if(_elapsedSeconds>10.0 && _elapsedSeconds<11.0)
+			if(_elapsedSeconds>60.0 && _elapsedSeconds<61.0)
 			{
 				const char *path1="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/15a.txt";
 				ofstream file1;
@@ -978,7 +980,7 @@ void pplCounter::update(Frame *frame)
 					_go=false;
 				}
 			}
-			if(_elapsedSeconds>20.0 && _elapsedSeconds<21.0)
+			if(_elapsedSeconds>120.0 && _elapsedSeconds<121.0)
 			{
 				const char *path2="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/30a.txt";
 				ofstream file2;
@@ -1001,7 +1003,7 @@ void pplCounter::update(Frame *frame)
 					_go=true;
 				}
 			}
-			if(_elapsedSeconds>30.0 && _elapsedSeconds<31.0)
+			if(_elapsedSeconds>180.0 && _elapsedSeconds<181.0)
 			{
 				const char *path3="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/45a.txt";
 				ofstream file3;
@@ -1024,7 +1026,7 @@ void pplCounter::update(Frame *frame)
 					_go=false;
 				}
 			}
-			if(_elapsedSeconds>40.0 && _elapsedSeconds<41.0)
+			if(_elapsedSeconds>240.0 && _elapsedSeconds<241.0)
 			{
 				const char *path4="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/60a.txt";
 				ofstream file4;
@@ -1047,7 +1049,7 @@ void pplCounter::update(Frame *frame)
 					_go=true;
 				}
 			}
-			if(_elapsedSeconds>50.0 && _elapsedSeconds<51.0)
+			if(_elapsedSeconds>300.0 && _elapsedSeconds<301.0)
 			{
 				const char *path5="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/75a.txt";
 				ofstream file5;
@@ -1067,13 +1069,25 @@ void pplCounter::update(Frame *frame)
 					{
 						timeData.push_back(to_string(0));
 					}
+					_go=false;
+					
+				}
+			}
+			if(_elapsedSeconds>310.0 && _elapsedSeconds<311.0)
+			{
+				if(!_go)
+				{
 					startTime=chrono::system_clock::now();
+					clearCounts();
+					ahead=false;
+					_go=true;
 				}
 			}
 			const char *path6="/home/e-motion/Software/DemoApplications/TinTin/pplcount/pal/loginapp-master/public/timeData.txt";
-				ofstream file6;
-				file6.open(path6);
-				string s;
+			ofstream file6;
+			file6.open(path6);
+			if(ahead)
+			{
 				for(int i=0;i<timeData.size();i++)
 				{
 					if(i%2==0)
@@ -1082,12 +1096,13 @@ void pplCounter::update(Frame *frame)
 					}
 					else
 					{
-						s+=timeData[i]+"\n";
+						s+=timeData[i]+"\n\n";
 					}
 				}
-				string data6(s);
-				file6 << data6;
-				file6.close();
+			}
+			string data6(s);
+			file6 << data6;
+			file6.close();
 		
 		}
 }

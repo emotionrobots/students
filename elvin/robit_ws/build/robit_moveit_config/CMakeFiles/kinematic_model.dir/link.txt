@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.o  -o /home/elvin/robit_ws/devel/lib/robit_moveit_config/kinematic_model -rdynamic 

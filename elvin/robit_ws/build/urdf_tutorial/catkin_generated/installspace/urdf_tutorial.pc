@@ -1,0 +1,8 @@
+prefix=/home/elvin/robit_ws/install
+
+Name: urdf_tutorial
+Description: Description of urdf_tutorial
+Version: 0.3.0
+Cflags: 
+Libs: -L/home/elvin/robit_ws/install/lib 
+Requires: 

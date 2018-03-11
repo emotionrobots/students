@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/elvin/robit_ws/src/robit_moveit_config/src/kinematic_model.cpp
+ros/ros.h
+-
+moveit/robot_model_loader/robot_model_loader.h
+-
+moveit/robot_model/robot_model.h
+-
+moveit/robot_state/robot_state.h
+-
+

@@ -1,7 +1,11 @@
 #include <iostream>
+
 #include <ros/ros.h>
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
+
+#include <std_msgs/String.h>
+#include <sstream>
 
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "robit_move_group_interface");
@@ -41,6 +45,7 @@ int main(int argc, char **argv) {
 	double home_y = msg.pose.position.y;
 	double home_z = msg.pose.position.z;
 
+	ros::Publisher PWM_pub = node_handle.advertise<std_msgs::String>("chatter", 1000);
 
 
 	while (true) {
@@ -92,9 +97,19 @@ int main(int argc, char **argv) {
 		toPush[3] += 1400;
 		toPush[4] = 1450 - toPush[4];
 
+		std_msgs::String msg;
+		std::stringstream ss;
+
 		for (std::size_t i = 0; i < toPush.size(); ++i) {
 			ROS_INFO("%f", toPush[i]);
+			ss << toPush[i] << ' ';
 		}
+
+		msg.data = ss.str();
+
+		PWM_pub.publish(msg);
+
+		ros::spinOnce();
 		
 	}
 

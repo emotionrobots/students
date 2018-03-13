@@ -132,6 +132,7 @@ robit_moveit/doc/kinematics/CMakeFiles/robit_move_group_interface.dir/src/robit_
  /opt/ros/kinetic/include/srdfdom/model.h
  /opt/ros/kinetic/include/std_msgs/ColorRGBA.h
  /opt/ros/kinetic/include/std_msgs/Header.h
+ /opt/ros/kinetic/include/std_msgs/String.h
  /opt/ros/kinetic/include/tf/LinearMath/Matrix3x3.h
  /opt/ros/kinetic/include/tf/LinearMath/MinMax.h
  /opt/ros/kinetic/include/tf/LinearMath/QuadWord.h

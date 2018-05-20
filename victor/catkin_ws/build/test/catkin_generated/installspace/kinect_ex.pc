@@ -1,0 +1,8 @@
+prefix=/home/emotion1234/catkin_ws/install
+
+Name: kinect_ex
+Description: Description of kinect_ex
+Version: 0.0.1
+Cflags: -I/home/emotion1234/catkin_ws/install/include
+Libs: -L/home/emotion1234/catkin_ws/install/lib 
+Requires: roscpp sensor_msgs

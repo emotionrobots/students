@@ -1,0 +1,8 @@
+prefix=/home/emotion1234/catkin_ws/devel
+
+Name: camera
+Description: Description of camera
+Version: 0.0.0
+Cflags: -I/home/emotion1234/catkin_ws/src/camera/include
+Libs: -L/home/emotion1234/catkin_ws/devel/lib 
+Requires: roscpp sensor_msgs

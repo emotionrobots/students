@@ -117,6 +117,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/elvin/robit_ws/build/gtest/cmake_install.cmake")
+  include("/home/elvin/robit_ws/build/camera/cmake_install.cmake")
   include("/home/elvin/robit_ws/build/r2d2/cmake_install.cmake")
   include("/home/elvin/robit_ws/build/robit_urdf/cmake_install.cmake")
   include("/home/elvin/robit_ws/build/robit_moveit_config/cmake_install.cmake")

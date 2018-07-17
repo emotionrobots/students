@@ -9,4 +9,4 @@ controller_list:
       - finger_rotate
   - name: fake_endeffector_controller
     joints:
-      - finger_rotate
+      []

@@ -16,6 +16,7 @@ robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.c
 robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.o: /opt/ros/kinetic/include/moveit/kinematics_plugin_loader/kinematics_plugin_loader.h
 robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.o: /opt/ros/kinetic/include/moveit/macros/class_forward.h
 robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.o: /opt/ros/kinetic/include/moveit/macros/declare_ptr.h
+robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.o: /opt/ros/kinetic/include/moveit/macros/deprecation.h
 robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.o: /opt/ros/kinetic/include/moveit/rdf_loader/rdf_loader.h
 robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.o: /opt/ros/kinetic/include/moveit/robot_model/fixed_joint_model.h
 robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.o: /opt/ros/kinetic/include/moveit/robot_model/floating_joint_model.h

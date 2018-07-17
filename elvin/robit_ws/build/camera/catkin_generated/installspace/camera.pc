@@ -1,0 +1,8 @@
+prefix=/home/elvin/robit_ws/install
+
+Name: camera
+Description: Description of camera
+Version: 0.0.0
+Cflags: -I/home/elvin/robit_ws/install/include
+Libs: -L/home/elvin/robit_ws/install/lib 
+Requires: roscpp sensor_msgs

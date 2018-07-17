@@ -89,17 +89,6 @@ rebuild_cache/fast: rebuild_cache
 
 .PHONY : rebuild_cache/fast
 
-# Special rule for the target test
-test:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
-	/usr/bin/ctest --force-new-ctest-process $(ARGS)
-.PHONY : test
-
-# Special rule for the target test
-test/fast: test
-
-.PHONY : test/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
@@ -132,6 +121,17 @@ install/strip: preinstall
 install/strip/fast: install/strip
 
 .PHONY : install/strip/fast
+
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+
+.PHONY : test/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -180,48 +180,6 @@ robit_move_group_interface/fast:
 	cd /home/elvin/robit_ws/build && $(MAKE) -f robit_moveit/doc/kinematics/CMakeFiles/robit_move_group_interface.dir/build.make robit_moveit/doc/kinematics/CMakeFiles/robit_move_group_interface.dir/build
 .PHONY : robit_move_group_interface/fast
 
-# Convenience name for target.
-robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/rule:
-	cd /home/elvin/robit_ws/build && $(MAKE) -f CMakeFiles/Makefile2 robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/rule
-.PHONY : robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/rule
-
-# Convenience name for target.
-kinematic_model: robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/rule
-
-.PHONY : kinematic_model
-
-# fast build rule for target.
-kinematic_model/fast:
-	cd /home/elvin/robit_ws/build && $(MAKE) -f robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/build.make robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/build
-.PHONY : kinematic_model/fast
-
-src/kinematic_model.o: src/kinematic_model.cpp.o
-
-.PHONY : src/kinematic_model.o
-
-# target to build an object file
-src/kinematic_model.cpp.o:
-	cd /home/elvin/robit_ws/build && $(MAKE) -f robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/build.make robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.o
-.PHONY : src/kinematic_model.cpp.o
-
-src/kinematic_model.i: src/kinematic_model.cpp.i
-
-.PHONY : src/kinematic_model.i
-
-# target to preprocess a source file
-src/kinematic_model.cpp.i:
-	cd /home/elvin/robit_ws/build && $(MAKE) -f robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/build.make robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.i
-.PHONY : src/kinematic_model.cpp.i
-
-src/kinematic_model.s: src/kinematic_model.cpp.s
-
-.PHONY : src/kinematic_model.s
-
-# target to generate assembly for a file
-src/kinematic_model.cpp.s:
-	cd /home/elvin/robit_ws/build && $(MAKE) -f robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/build.make robit_moveit/doc/kinematics/CMakeFiles/kinematic_model.dir/src/kinematic_model.cpp.s
-.PHONY : src/kinematic_model.cpp.s
-
 src/robit_move_group_interface.o: src/robit_move_group_interface.cpp.o
 
 .PHONY : src/robit_move_group_interface.o
@@ -258,15 +216,11 @@ help:
 	@echo "... list_install_components"
 	@echo "... install"
 	@echo "... rebuild_cache"
-	@echo "... test"
 	@echo "... edit_cache"
 	@echo "... robit_move_group_interface"
-	@echo "... kinematic_model"
 	@echo "... install/local"
 	@echo "... install/strip"
-	@echo "... src/kinematic_model.o"
-	@echo "... src/kinematic_model.i"
-	@echo "... src/kinematic_model.s"
+	@echo "... test"
 	@echo "... src/robit_move_group_interface.o"
 	@echo "... src/robit_move_group_interface.i"
 	@echo "... src/robit_move_group_interface.s"

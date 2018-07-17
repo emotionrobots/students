@@ -163,8 +163,6 @@ moveit/macros/class_forward.h
 -
 ros/node_handle.h
 -
-console_bridge/console.h
--
 boost/function.hpp
 -
 string
@@ -187,6 +185,8 @@ moveit/macros/declare_ptr.h
 /opt/ros/kinetic/include/moveit/macros/declare_ptr.h
 memory
 -
+
+/opt/ros/kinetic/include/moveit/macros/deprecation.h
 
 /opt/ros/kinetic/include/moveit/rdf_loader/rdf_loader.h
 moveit/macros/class_forward.h
@@ -267,8 +267,6 @@ moveit/macros/class_forward.h
 -
 moveit/exceptions/exceptions.h
 -
-console_bridge/console.h
--
 urdf/model.h
 -
 srdfdom/model.h
@@ -316,6 +314,8 @@ set
 moveit/robot_model/robot_model.h
 -
 moveit/robot_state/attached_body.h
+-
+moveit/macros/deprecation.h
 -
 sensor_msgs/JointState.h
 -

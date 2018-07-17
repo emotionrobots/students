@@ -1,2 +1,2 @@
-r2d2:robit_moveit:robit_moveit_config:robit_urdf:robot_setup_tf:urdf_tutorial
+camera:r2d2:robit_moveit:robit_moveit_config:robit_urdf:robot_setup_tf:urdf_tutorial
 -DCATKIN_DEVEL_PREFIX=/home/elvin/robit_ws/devel -DCMAKE_INSTALL_PREFIX=/home/elvin/robit_ws/install -G Unix Makefiles

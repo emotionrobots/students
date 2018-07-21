@@ -44,10 +44,25 @@ commands executed will execute on the pi
 in a new terminal:
 	ifconfig
 find an 'inet addr' that looks like 10.x.x.x
+remember this ip
 open ~/.bashrc in Sublime Text
 at the bottom write:
-	export ROS_IP=ip you got from ifconfig
+	export ROS_IP=<ip you got from ifconfig>
+	^brackets for clarity
 
 on the pi:
 	ifconfig
+	find an 'inet addr' that looks like 10.x.x.x
+	remember this ip
+	open ~/.bashrc on the raspberry pi by:
+		nano ~/.bashrc
+	use the down arrow key to go to the bottom
+	comment out the 'export ROS_MASTER_URI' statement by putting a '#' in front of it
 
+on the main computer:
+	execute 'hostname' and remember the string it returns
+
+on the pi:
+	in the pi's ~/.bashrc at the bottom write
+	copy the format of the 'export ROS_MASTER_URI' statement
+	but replace 'embp' with the hostname of the main computer

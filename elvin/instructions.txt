@@ -1,0 +1,53 @@
+download the robit_ws folder from github and put it in the home folder
+
+open ~/.bashrc in Sublime Text
+
+at the bottom write:
+	source ~/robit_ws/devel/setup.bash
+
+open Terminal
+execute:
+	cd ~/robit_ws
+	catkin_make
+
+to run the robot simulation and calculations
+in one terminal window execute:
+	roscore
+(once roscore is running you don't need to call this again)
+
+in one terminal tab:
+	roslaunch robit_moveit_config demo.launch
+in another terminal tab
+	rosrun robit_moveit robit_move_group_interface
+
+running the camera stuff is the same as usual
+
+
+
+
+---------------------------
+configuring the pi:
+plug in the pi
+connect the ethernet to pi and the usb adapter to computer
+
+wait a minute or so for the pi to boot
+
+in main computer terminal:
+	ssh ubuntu@ubiquityrobot.local
+if it prompts you to trust or add something just say yes
+the password for the pi is: ubuntu
+
+this is now a raspberry pi terminal
+commands executed will execute on the pi
+
+
+in a new terminal:
+	ifconfig
+find an 'inet addr' that looks like 10.x.x.x
+open ~/.bashrc in Sublime Text
+at the bottom write:
+	export ROS_IP=ip you got from ifconfig
+
+on the pi:
+	ifconfig
+

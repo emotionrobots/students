@@ -66,3 +66,8 @@ on the pi:
 	in the pi's ~/.bashrc at the bottom write
 	copy the format of the 'export ROS_MASTER_URI' statement
 	but replace 'embp' with the hostname of the main computer
+
+
+
+to run the robot control on the pi:
+	rosrun beginner_tutorials parent.py

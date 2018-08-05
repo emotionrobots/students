@@ -208,9 +208,11 @@ void execute(string input) {
 		move(0.0, 1.57, 0, x1, y1, 0.05);
 		// publish_gripper("c", 1);
 		// move(0.0, 1.57, 0, x1, y1, 0.06);
-		move(0.0, 1.57, 0, xm, ym, 0.05);
+		// move(0.0, 1.57, 0, xm, ym, 0.05);
 		// publish_gripper("c", 1);
 		
+
+		move(0.0, 1.57, 0, x2, y2, 0.05);
 		move(0.0, 1.57, 0, x2, y2, 0.03);
 		publish_gripper("o", 2);
 
@@ -252,9 +254,7 @@ int main(int argc, char **argv) {
 
 	publish_gripper("o", 1);
 	while (true) {
-		if (!isExecuting) {
-			ros::spinOnce();
-		}
+		ros::spinOnce();
 	}
 	
 
